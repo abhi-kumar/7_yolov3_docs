@@ -1,0 +1,1523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>7_yolov3.lib.models API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>7_yolov3.lib.models</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import torch.nn.functional as F
+
+from utils.google_utils import *
+from utils.parse_config import *
+from utils.utils import *
+
+ONNX_EXPORT = False
+
+
+def create_modules(module_defs, img_size, arc):
+    # Constructs module list of layer blocks from module configuration in module_defs
+
+    hyperparams = module_defs.pop(0)
+    output_filters = [int(hyperparams[&#39;channels&#39;])]
+    module_list = nn.ModuleList()
+    routs = []  # list of layers which rout to deeper layers
+    yolo_index = -1
+
+    for i, mdef in enumerate(module_defs):
+        modules = nn.Sequential()
+
+        if mdef[&#39;type&#39;] == &#39;convolutional&#39;:
+            bn = int(mdef[&#39;batch_normalize&#39;])
+            filters = int(mdef[&#39;filters&#39;])
+            size = int(mdef[&#39;size&#39;])
+            stride = int(mdef[&#39;stride&#39;]) if &#39;stride&#39; in mdef else (int(mdef[&#39;stride_y&#39;]), int(mdef[&#39;stride_x&#39;]))
+            pad = (size - 1) // 2 if int(mdef[&#39;pad&#39;]) else 0
+            modules.add_module(&#39;Conv2d&#39;, nn.Conv2d(in_channels=output_filters[-1],
+                                                   out_channels=filters,
+                                                   kernel_size=size,
+                                                   stride=stride,
+                                                   padding=pad,
+                                                   groups=int(mdef[&#39;groups&#39;]) if &#39;groups&#39; in mdef else 1,
+                                                   bias=not bn))
+            if bn:
+                modules.add_module(&#39;BatchNorm2d&#39;, nn.BatchNorm2d(filters, momentum=0.1))
+            if mdef[&#39;activation&#39;] == &#39;leaky&#39;:  # TODO: activation study https://github.com/ultralytics/yolov3/issues/441
+                modules.add_module(&#39;activation&#39;, nn.LeakyReLU(0.1, inplace=True))
+                # modules.add_module(&#39;activation&#39;, nn.PReLU(num_parameters=1, init=0.10))
+            elif mdef[&#39;activation&#39;] == &#39;swish&#39;:
+                modules.add_module(&#39;activation&#39;, Swish())
+
+        elif mdef[&#39;type&#39;] == &#39;maxpool&#39;:
+            size = int(mdef[&#39;size&#39;])
+            stride = int(mdef[&#39;stride&#39;])
+            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=int((size - 1) // 2))
+            if size == 2 and stride == 1:  # yolov3-tiny
+                modules.add_module(&#39;ZeroPad2d&#39;, nn.ZeroPad2d((0, 1, 0, 1)))
+                modules.add_module(&#39;MaxPool2d&#39;, maxpool)
+            else:
+                modules = maxpool
+
+        elif mdef[&#39;type&#39;] == &#39;upsample&#39;:
+            modules = nn.Upsample(scale_factor=int(mdef[&#39;stride&#39;]), mode=&#39;nearest&#39;)
+
+        elif mdef[&#39;type&#39;] == &#39;route&#39;:  # nn.Sequential() placeholder for &#39;route&#39; layer
+            layers = [int(x) for x in mdef[&#39;layers&#39;].split(&#39;,&#39;)]
+            filters = sum([output_filters[i + 1 if i &gt; 0 else i] for i in layers])
+            routs.extend([l if l &gt; 0 else l + i for l in layers])
+            # if mdef[i+1][&#39;type&#39;] == &#39;reorg3d&#39;:
+            #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1][&#39;stride&#39;]), mode=&#39;nearest&#39;)  # reorg3d
+
+        elif mdef[&#39;type&#39;] == &#39;shortcut&#39;:  # nn.Sequential() placeholder for &#39;shortcut&#39; layer
+            filters = output_filters[int(mdef[&#39;from&#39;])]
+            layer = int(mdef[&#39;from&#39;])
+            routs.extend([i + layer if layer &lt; 0 else layer])
+
+        elif mdef[&#39;type&#39;] == &#39;reorg3d&#39;:  # yolov3-spp-pan-scale
+            # torch.Size([16, 128, 104, 104])
+            # torch.Size([16, 64, 208, 208]) &lt;-- # stride 2 interpolate dimensions 2 and 3 to cat with prior layer
+            pass
+
+        elif mdef[&#39;type&#39;] == &#39;yolo&#39;:
+            yolo_index += 1
+            mask = [int(x) for x in mdef[&#39;mask&#39;].split(&#39;,&#39;)]  # anchor mask
+            modules = YOLOLayer(anchors=mdef[&#39;anchors&#39;][mask],  # anchor list
+                                nc=int(mdef[&#39;classes&#39;]),  # number of classes
+                                img_size=img_size,  # (416, 416)
+                                yolo_index=yolo_index,  # 0, 1 or 2
+                                arc=arc)  # yolo architecture
+
+            # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
+            try:
+                if arc == &#39;defaultpw&#39; or arc == &#39;Fdefaultpw&#39;:  # default with positive weights
+                    b = [-5.0, -5.0]  # obj, cls
+                elif arc == &#39;default&#39;:  # default no pw (40 cls, 80 obj)
+                    b = [-5.0, -5.0]
+                elif arc == &#39;uBCE&#39;:  # unified BCE (80 classes)
+                    b = [0, -9.0]
+                elif arc == &#39;uCE&#39;:  # unified CE (1 background + 80 classes)
+                    b = [10, -0.1]
+                elif arc == &#39;Fdefault&#39;:  # Focal default no pw (28 cls, 21 obj, no pw)
+                    b = [-2.1, -1.8]
+                elif arc == &#39;uFBCE&#39; or arc == &#39;uFBCEpw&#39;:  # unified FocalBCE (5120 obj, 80 classes)
+                    b = [0, -6.5]
+                elif arc == &#39;uFCE&#39;:  # unified FocalCE (64 cls, 1 background + 80 classes)
+                    b = [7.7, -1.1]
+
+                bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
+                bias[:, 4] += b[0] - bias[:, 4].mean()  # obj
+                bias[:, 5:] += b[1] - bias[:, 5:].mean()  # cls
+                # bias = torch.load(&#39;weights/yolov3-spp.bias.pt&#39;)[yolo_index]  # list of tensors [3x85, 3x85, 3x85]
+                module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
+                # utils.print_model_biases(model)
+            except:
+                print(&#39;WARNING: smart bias initialization failure.&#39;)
+
+        else:
+            print(&#39;Warning: Unrecognized Layer Type: &#39; + mdef[&#39;type&#39;])
+
+        # Register module list and number of output filters
+        module_list.append(modules)
+        output_filters.append(filters)
+
+    return module_list, routs
+
+
+class SwishImplementation(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, i):
+        ctx.save_for_backward(i)
+        return i * torch.sigmoid(i)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        sigmoid_i = torch.sigmoid(ctx.saved_variables[0])
+        return grad_output * (sigmoid_i * (1 + ctx.saved_variables[0] * (1 - sigmoid_i)))
+
+
+class MemoryEfficientSwish(nn.Module):
+    def forward(self, x):
+        return SwishImplementation.apply(x)
+
+
+class Swish(nn.Module):
+    def forward(self, x):
+        return x.mul_(torch.sigmoid(x))
+
+
+class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
+    def forward(self, x):
+        return x.mul_(F.softplus(x).tanh())
+
+
+class YOLOLayer(nn.Module):
+    def __init__(self, anchors, nc, img_size, yolo_index, arc):
+        super(YOLOLayer, self).__init__()
+
+        self.anchors = torch.Tensor(anchors)
+        self.na = len(anchors)  # number of anchors (3)
+        self.nc = nc  # number of classes (80)
+        self.no = nc + 5  # number of outputs
+        self.nx = 0  # initialize number of x gridpoints
+        self.ny = 0  # initialize number of y gridpoints
+        self.arc = arc
+
+        if ONNX_EXPORT:  # grids must be computed in __init__
+            stride = [32, 16, 8][yolo_index]  # stride of this layer
+            nx = int(img_size[1] / stride)  # number x grid points
+            ny = int(img_size[0] / stride)  # number y grid points
+            create_grids(self, img_size, (nx, ny))
+
+    def forward(self, p, img_size, var=None):
+        if ONNX_EXPORT:
+            bs = 1  # batch size
+        else:
+            bs, _, ny, nx = p.shape  # bs, 255, 13, 13
+            if (self.nx, self.ny) != (nx, ny):
+                create_grids(self, img_size, (nx, ny), p.device, p.dtype)
+
+        # p.view(bs, 255, 13, 13) -- &gt; (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
+        p = p.view(bs, self.na, self.no, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+
+        if self.training:
+            return p
+
+        elif ONNX_EXPORT:
+            # Constants CAN NOT BE BROADCAST, ensure correct shape!
+            m = self.na * self.nx * self.ny
+            grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(m, 2)
+            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(m, 2) / self.ng
+
+            p = p.view(m, self.no)
+            xy = torch.sigmoid(p[:, 0:2]) + grid_xy  # x, y
+            wh = torch.exp(p[:, 2:4]) * anchor_wh  # width, height
+            p_cls = torch.sigmoid(p[:, 5:self.no]) * torch.sigmoid(p[:, 4:5])  # conf
+            return p_cls, xy / self.ng, wh
+
+        else:  # inference
+            # s = 1.5  # scale_xy  (pxy = pxy * s - (s - 1) / 2)
+            io = p.clone()  # inference output
+            io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid_xy  # xy
+            io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
+            # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
+            io[..., :4] *= self.stride
+
+            if &#39;default&#39; in self.arc:  # seperate obj and cls
+                torch.sigmoid_(io[..., 4:])
+            elif &#39;BCE&#39; in self.arc:  # unified BCE (80 classes)
+                torch.sigmoid_(io[..., 5:])
+                io[..., 4] = 1
+            elif &#39;CE&#39; in self.arc:  # unified CE (1 background + 80 classes)
+                io[..., 4:] = F.softmax(io[..., 4:], dim=4)
+                io[..., 4] = 1
+
+            if self.nc == 1:
+                io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
+
+            # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
+            return io.view(bs, -1, self.no), p
+
+
+class Darknet(nn.Module):
+    # YOLOv3 object detection model
+
+    def __init__(self, cfg, img_size=(416, 416), arc=&#39;default&#39;):
+        super(Darknet, self).__init__()
+
+        self.module_defs = parse_model_cfg(cfg)
+        self.module_list, self.routs = create_modules(self.module_defs, img_size, arc)
+        self.yolo_layers = get_yolo_layers(self)
+
+        # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
+        self.version = np.array([0, 2, 5], dtype=np.int32)  # (int32) version info: major, minor, revision
+        self.seen = np.array([0], dtype=np.int64)  # (int64) number of images seen during training
+
+    def forward(self, x, var=None):
+        img_size = x.shape[-2:]
+        layer_outputs = []
+        output = []
+
+        for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
+            mtype = mdef[&#39;type&#39;]
+            if mtype in [&#39;convolutional&#39;, &#39;upsample&#39;, &#39;maxpool&#39;]:
+                x = module(x)
+            elif mtype == &#39;route&#39;:
+                layers = [int(x) for x in mdef[&#39;layers&#39;].split(&#39;,&#39;)]
+                if len(layers) == 1:
+                    x = layer_outputs[layers[0]]
+                else:
+                    try:
+                        x = torch.cat([layer_outputs[i] for i in layers], 1)
+                    except:  # apply stride 2 for darknet reorg layer
+                        layer_outputs[layers[1]] = F.interpolate(layer_outputs[layers[1]], scale_factor=[0.5, 0.5])
+                        x = torch.cat([layer_outputs[i] for i in layers], 1)
+                    # print(&#39;&#39;), [print(layer_outputs[i].shape) for i in layers], print(x.shape)
+            elif mtype == &#39;shortcut&#39;:
+                x = x + layer_outputs[int(mdef[&#39;from&#39;])]
+            elif mtype == &#39;yolo&#39;:
+                output.append(module(x, img_size))
+            layer_outputs.append(x if i in self.routs else [])
+
+        if self.training:
+            return output
+        elif ONNX_EXPORT:
+            x = [torch.cat(x, 0) for x in zip(*output)]
+            return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
+        else:
+            io, p = list(zip(*output))  # inference output, training output
+            return torch.cat(io, 1), p
+
+    def fuse(self):
+        # Fuse Conv2d + BatchNorm2d layers throughout model
+        fused_list = nn.ModuleList()
+        for a in list(self.children())[0]:
+            if isinstance(a, nn.Sequential):
+                for i, b in enumerate(a):
+                    if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
+                        # fuse this bn layer with the previous conv2d layer
+                        conv = a[i - 1]
+                        fused = torch_utils.fuse_conv_and_bn(conv, b)
+                        a = nn.Sequential(fused, *list(a.children())[i + 1:])
+                        break
+            fused_list.append(a)
+        self.module_list = fused_list
+        # model_info(self)  # yolov3-spp reduced from 225 to 152 layers
+
+
+def get_yolo_layers(model):
+    return [i for i, x in enumerate(model.module_defs) if x[&#39;type&#39;] == &#39;yolo&#39;]  # [82, 94, 106] for yolov3
+
+
+def create_grids(self, img_size=416, ng=(13, 13), device=&#39;cpu&#39;, type=torch.float32):
+    nx, ny = ng  # x and y grid size
+    self.img_size = max(img_size)
+    self.stride = self.img_size / max(ng)
+
+    # build xy offsets
+    yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+    self.grid_xy = torch.stack((xv, yv), 2).to(device).type(type).view((1, 1, ny, nx, 2))
+
+    # build wh gains
+    self.anchor_vec = self.anchors.to(device) / self.stride
+    self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2).to(device).type(type)
+    self.ng = torch.Tensor(ng).to(device)
+    self.nx = nx
+    self.ny = ny
+
+
+def load_darknet_weights(self, weights, cutoff=-1):
+    # Parses and loads the weights stored in &#39;weights&#39;
+
+    # Establish cutoffs (load layers between 0 and cutoff. if cutoff = -1 all are loaded)
+    file = Path(weights).name
+    if file == &#39;darknet53.conv.74&#39;:
+        cutoff = 75
+    elif file == &#39;yolov3-tiny.conv.15&#39;:
+        cutoff = 15
+
+    # Read weights file
+    with open(weights, &#39;rb&#39;) as f:
+        # Read Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
+        self.version = np.fromfile(f, dtype=np.int32, count=3)  # (int32) version info: major, minor, revision
+        self.seen = np.fromfile(f, dtype=np.int64, count=1)  # (int64) number of images seen during training
+
+        weights = np.fromfile(f, dtype=np.float32)  # the rest are weights
+
+    ptr = 0
+    for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
+        if mdef[&#39;type&#39;] == &#39;convolutional&#39;:
+            conv_layer = module[0]
+            if mdef[&#39;batch_normalize&#39;]:
+                # Load BN bias, weights, running mean and running variance
+                bn_layer = module[1]
+                num_b = bn_layer.bias.numel()  # Number of biases
+                # Bias
+                bn_b = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.bias)
+                bn_layer.bias.data.copy_(bn_b)
+                ptr += num_b
+                # Weight
+                bn_w = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.weight)
+                bn_layer.weight.data.copy_(bn_w)
+                ptr += num_b
+                # Running Mean
+                bn_rm = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.running_mean)
+                bn_layer.running_mean.data.copy_(bn_rm)
+                ptr += num_b
+                # Running Var
+                bn_rv = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.running_var)
+                bn_layer.running_var.data.copy_(bn_rv)
+                ptr += num_b
+            else:
+                # Load conv. bias
+                num_b = conv_layer.bias.numel()
+                conv_b = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(conv_layer.bias)
+                conv_layer.bias.data.copy_(conv_b)
+                ptr += num_b
+            # Load conv. weights
+            num_w = conv_layer.weight.numel()
+            conv_w = torch.from_numpy(weights[ptr:ptr + num_w]).view_as(conv_layer.weight)
+            conv_layer.weight.data.copy_(conv_w)
+            ptr += num_w
+
+
+def save_weights(self, path=&#39;model.weights&#39;, cutoff=-1):
+    # Converts a PyTorch model to Darket format (*.pt to *.weights)
+    # Note: Does not work if model.fuse() is applied
+    with open(path, &#39;wb&#39;) as f:
+        # Write Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
+        self.version.tofile(f)  # (int32) version info: major, minor, revision
+        self.seen.tofile(f)  # (int64) number of images seen during training
+
+        # Iterate through layers
+        for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
+            if mdef[&#39;type&#39;] == &#39;convolutional&#39;:
+                conv_layer = module[0]
+                # If batch norm, load bn first
+                if mdef[&#39;batch_normalize&#39;]:
+                    bn_layer = module[1]
+                    bn_layer.bias.data.cpu().numpy().tofile(f)
+                    bn_layer.weight.data.cpu().numpy().tofile(f)
+                    bn_layer.running_mean.data.cpu().numpy().tofile(f)
+                    bn_layer.running_var.data.cpu().numpy().tofile(f)
+                # Load conv bias
+                else:
+                    conv_layer.bias.data.cpu().numpy().tofile(f)
+                # Load conv weights
+                conv_layer.weight.data.cpu().numpy().tofile(f)
+
+
+def convert(cfg=&#39;cfg/yolov3-spp.cfg&#39;, weights=&#39;weights/yolov3-spp.weights&#39;):
+    # Converts between PyTorch and Darknet format per extension (i.e. *.weights convert to *.pt and vice versa)
+    # from models import *; convert(&#39;cfg/yolov3-spp.cfg&#39;, &#39;weights/yolov3-spp.weights&#39;)
+
+    # Initialize model
+    model = Darknet(cfg)
+
+    # Load weights and save
+    if weights.endswith(&#39;.pt&#39;):  # if PyTorch format
+        model.load_state_dict(torch.load(weights, map_location=&#39;cpu&#39;)[&#39;model&#39;])
+        save_weights(model, path=&#39;converted.weights&#39;, cutoff=-1)
+        print(&#34;Success: converted &#39;%s&#39; to &#39;converted.weights&#39;&#34; % weights)
+
+    elif weights.endswith(&#39;.weights&#39;):  # darknet format
+        _ = load_darknet_weights(model, weights)
+
+        chkpt = {&#39;epoch&#39;: -1,
+                 &#39;best_fitness&#39;: None,
+                 &#39;training_results&#39;: None,
+                 &#39;model&#39;: model.state_dict(),
+                 &#39;optimizer&#39;: None}
+
+        torch.save(chkpt, &#39;converted.pt&#39;)
+        print(&#34;Success: converted &#39;%s&#39; to &#39;converted.pt&#39;&#34; % weights)
+
+    else:
+        print(&#39;Error: extension not supported.&#39;)
+
+
+def attempt_download(weights):
+    # Attempt to download pretrained weights if not found locally
+    msg = weights + &#39; missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0&#39;
+
+    if weights and not os.path.isfile(weights):
+        d = {&#39;yolov3-spp.weights&#39;: &#39;16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R&#39;,
+             &#39;yolov3.weights&#39;: &#39;1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y&#39;,
+             &#39;yolov3-tiny.weights&#39;: &#39;1CCF-iNIIkYesIDzaPvdwlcf7H9zSsKZQ&#39;,
+             &#39;yolov3-spp.pt&#39;: &#39;1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR&#39;,
+             &#39;yolov3.pt&#39;: &#39;1SHNFyoe5Ni8DajDNEqgB2oVKBb_NoEad&#39;,
+             &#39;yolov3-tiny.pt&#39;: &#39;10m_3MlpQwRtZetQxtksm9jqHrPTHZ6vo&#39;,
+             &#39;darknet53.conv.74&#39;: &#39;1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ&#39;,
+             &#39;yolov3-tiny.conv.15&#39;: &#39;1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj&#39;,
+             &#39;ultralytics49.pt&#39;: &#39;158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq&#39;,
+             &#39;ultralytics68.pt&#39;: &#39;1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG&#39;}
+
+        file = Path(weights).name
+        if file in d:
+            r = gdrive_download(id=d[file], name=weights)
+        else:  # download from pjreddie.com
+            url = &#39;https://pjreddie.com/media/files/&#39; + file
+            print(&#39;Downloading &#39; + url)
+            r = os.system(&#39;curl -f &#39; + url + &#39; -o &#39; + weights)
+
+        # Error check
+        if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) &gt; 1E6):  # weights exist and &gt; 1MB
+            os.system(&#39;rm &#39; + weights)  # remove partial downloads
+            raise Exception(msg)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="7_yolov3.lib.models.attempt_download"><code class="name flex">
+<span>def <span class="ident">attempt_download</span></span>(<span>weights)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def attempt_download(weights):
+    # Attempt to download pretrained weights if not found locally
+    msg = weights + &#39; missing, try downloading from https://drive.google.com/open?id=1LezFG5g3BCW6iYaV89B2i64cqEUZD7e0&#39;
+
+    if weights and not os.path.isfile(weights):
+        d = {&#39;yolov3-spp.weights&#39;: &#39;16lYS4bcIdM2HdmyJBVDOvt3Trx6N3W2R&#39;,
+             &#39;yolov3.weights&#39;: &#39;1uTlyDWlnaqXcsKOktP5aH_zRDbfcDp-y&#39;,
+             &#39;yolov3-tiny.weights&#39;: &#39;1CCF-iNIIkYesIDzaPvdwlcf7H9zSsKZQ&#39;,
+             &#39;yolov3-spp.pt&#39;: &#39;1f6Ovy3BSq2wYq4UfvFUpxJFNDFfrIDcR&#39;,
+             &#39;yolov3.pt&#39;: &#39;1SHNFyoe5Ni8DajDNEqgB2oVKBb_NoEad&#39;,
+             &#39;yolov3-tiny.pt&#39;: &#39;10m_3MlpQwRtZetQxtksm9jqHrPTHZ6vo&#39;,
+             &#39;darknet53.conv.74&#39;: &#39;1WUVBid-XuoUBmvzBVUCBl_ELrzqwA8dJ&#39;,
+             &#39;yolov3-tiny.conv.15&#39;: &#39;1Bw0kCpplxUqyRYAJr9RY9SGnOJbo9nEj&#39;,
+             &#39;ultralytics49.pt&#39;: &#39;158g62Vs14E3aj7oPVPuEnNZMKFNgGyNq&#39;,
+             &#39;ultralytics68.pt&#39;: &#39;1Jm8kqnMdMGUUxGo8zMFZMJ0eaPwLkxSG&#39;}
+
+        file = Path(weights).name
+        if file in d:
+            r = gdrive_download(id=d[file], name=weights)
+        else:  # download from pjreddie.com
+            url = &#39;https://pjreddie.com/media/files/&#39; + file
+            print(&#39;Downloading &#39; + url)
+            r = os.system(&#39;curl -f &#39; + url + &#39; -o &#39; + weights)
+
+        # Error check
+        if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) &gt; 1E6):  # weights exist and &gt; 1MB
+            os.system(&#39;rm &#39; + weights)  # remove partial downloads
+            raise Exception(msg)</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.convert"><code class="name flex">
+<span>def <span class="ident">convert</span></span>(<span>cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert(cfg=&#39;cfg/yolov3-spp.cfg&#39;, weights=&#39;weights/yolov3-spp.weights&#39;):
+    # Converts between PyTorch and Darknet format per extension (i.e. *.weights convert to *.pt and vice versa)
+    # from models import *; convert(&#39;cfg/yolov3-spp.cfg&#39;, &#39;weights/yolov3-spp.weights&#39;)
+
+    # Initialize model
+    model = Darknet(cfg)
+
+    # Load weights and save
+    if weights.endswith(&#39;.pt&#39;):  # if PyTorch format
+        model.load_state_dict(torch.load(weights, map_location=&#39;cpu&#39;)[&#39;model&#39;])
+        save_weights(model, path=&#39;converted.weights&#39;, cutoff=-1)
+        print(&#34;Success: converted &#39;%s&#39; to &#39;converted.weights&#39;&#34; % weights)
+
+    elif weights.endswith(&#39;.weights&#39;):  # darknet format
+        _ = load_darknet_weights(model, weights)
+
+        chkpt = {&#39;epoch&#39;: -1,
+                 &#39;best_fitness&#39;: None,
+                 &#39;training_results&#39;: None,
+                 &#39;model&#39;: model.state_dict(),
+                 &#39;optimizer&#39;: None}
+
+        torch.save(chkpt, &#39;converted.pt&#39;)
+        print(&#34;Success: converted &#39;%s&#39; to &#39;converted.pt&#39;&#34; % weights)
+
+    else:
+        print(&#39;Error: extension not supported.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.create_grids"><code class="name flex">
+<span>def <span class="ident">create_grids</span></span>(<span>self, img_size=416, ng=(13, 13), device='cpu', type=torch.float32)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_grids(self, img_size=416, ng=(13, 13), device=&#39;cpu&#39;, type=torch.float32):
+    nx, ny = ng  # x and y grid size
+    self.img_size = max(img_size)
+    self.stride = self.img_size / max(ng)
+
+    # build xy offsets
+    yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+    self.grid_xy = torch.stack((xv, yv), 2).to(device).type(type).view((1, 1, ny, nx, 2))
+
+    # build wh gains
+    self.anchor_vec = self.anchors.to(device) / self.stride
+    self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2).to(device).type(type)
+    self.ng = torch.Tensor(ng).to(device)
+    self.nx = nx
+    self.ny = ny</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.create_modules"><code class="name flex">
+<span>def <span class="ident">create_modules</span></span>(<span>module_defs, img_size, arc)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_modules(module_defs, img_size, arc):
+    # Constructs module list of layer blocks from module configuration in module_defs
+
+    hyperparams = module_defs.pop(0)
+    output_filters = [int(hyperparams[&#39;channels&#39;])]
+    module_list = nn.ModuleList()
+    routs = []  # list of layers which rout to deeper layers
+    yolo_index = -1
+
+    for i, mdef in enumerate(module_defs):
+        modules = nn.Sequential()
+
+        if mdef[&#39;type&#39;] == &#39;convolutional&#39;:
+            bn = int(mdef[&#39;batch_normalize&#39;])
+            filters = int(mdef[&#39;filters&#39;])
+            size = int(mdef[&#39;size&#39;])
+            stride = int(mdef[&#39;stride&#39;]) if &#39;stride&#39; in mdef else (int(mdef[&#39;stride_y&#39;]), int(mdef[&#39;stride_x&#39;]))
+            pad = (size - 1) // 2 if int(mdef[&#39;pad&#39;]) else 0
+            modules.add_module(&#39;Conv2d&#39;, nn.Conv2d(in_channels=output_filters[-1],
+                                                   out_channels=filters,
+                                                   kernel_size=size,
+                                                   stride=stride,
+                                                   padding=pad,
+                                                   groups=int(mdef[&#39;groups&#39;]) if &#39;groups&#39; in mdef else 1,
+                                                   bias=not bn))
+            if bn:
+                modules.add_module(&#39;BatchNorm2d&#39;, nn.BatchNorm2d(filters, momentum=0.1))
+            if mdef[&#39;activation&#39;] == &#39;leaky&#39;:  # TODO: activation study https://github.com/ultralytics/yolov3/issues/441
+                modules.add_module(&#39;activation&#39;, nn.LeakyReLU(0.1, inplace=True))
+                # modules.add_module(&#39;activation&#39;, nn.PReLU(num_parameters=1, init=0.10))
+            elif mdef[&#39;activation&#39;] == &#39;swish&#39;:
+                modules.add_module(&#39;activation&#39;, Swish())
+
+        elif mdef[&#39;type&#39;] == &#39;maxpool&#39;:
+            size = int(mdef[&#39;size&#39;])
+            stride = int(mdef[&#39;stride&#39;])
+            maxpool = nn.MaxPool2d(kernel_size=size, stride=stride, padding=int((size - 1) // 2))
+            if size == 2 and stride == 1:  # yolov3-tiny
+                modules.add_module(&#39;ZeroPad2d&#39;, nn.ZeroPad2d((0, 1, 0, 1)))
+                modules.add_module(&#39;MaxPool2d&#39;, maxpool)
+            else:
+                modules = maxpool
+
+        elif mdef[&#39;type&#39;] == &#39;upsample&#39;:
+            modules = nn.Upsample(scale_factor=int(mdef[&#39;stride&#39;]), mode=&#39;nearest&#39;)
+
+        elif mdef[&#39;type&#39;] == &#39;route&#39;:  # nn.Sequential() placeholder for &#39;route&#39; layer
+            layers = [int(x) for x in mdef[&#39;layers&#39;].split(&#39;,&#39;)]
+            filters = sum([output_filters[i + 1 if i &gt; 0 else i] for i in layers])
+            routs.extend([l if l &gt; 0 else l + i for l in layers])
+            # if mdef[i+1][&#39;type&#39;] == &#39;reorg3d&#39;:
+            #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1][&#39;stride&#39;]), mode=&#39;nearest&#39;)  # reorg3d
+
+        elif mdef[&#39;type&#39;] == &#39;shortcut&#39;:  # nn.Sequential() placeholder for &#39;shortcut&#39; layer
+            filters = output_filters[int(mdef[&#39;from&#39;])]
+            layer = int(mdef[&#39;from&#39;])
+            routs.extend([i + layer if layer &lt; 0 else layer])
+
+        elif mdef[&#39;type&#39;] == &#39;reorg3d&#39;:  # yolov3-spp-pan-scale
+            # torch.Size([16, 128, 104, 104])
+            # torch.Size([16, 64, 208, 208]) &lt;-- # stride 2 interpolate dimensions 2 and 3 to cat with prior layer
+            pass
+
+        elif mdef[&#39;type&#39;] == &#39;yolo&#39;:
+            yolo_index += 1
+            mask = [int(x) for x in mdef[&#39;mask&#39;].split(&#39;,&#39;)]  # anchor mask
+            modules = YOLOLayer(anchors=mdef[&#39;anchors&#39;][mask],  # anchor list
+                                nc=int(mdef[&#39;classes&#39;]),  # number of classes
+                                img_size=img_size,  # (416, 416)
+                                yolo_index=yolo_index,  # 0, 1 or 2
+                                arc=arc)  # yolo architecture
+
+            # Initialize preceding Conv2d() bias (https://arxiv.org/pdf/1708.02002.pdf section 3.3)
+            try:
+                if arc == &#39;defaultpw&#39; or arc == &#39;Fdefaultpw&#39;:  # default with positive weights
+                    b = [-5.0, -5.0]  # obj, cls
+                elif arc == &#39;default&#39;:  # default no pw (40 cls, 80 obj)
+                    b = [-5.0, -5.0]
+                elif arc == &#39;uBCE&#39;:  # unified BCE (80 classes)
+                    b = [0, -9.0]
+                elif arc == &#39;uCE&#39;:  # unified CE (1 background + 80 classes)
+                    b = [10, -0.1]
+                elif arc == &#39;Fdefault&#39;:  # Focal default no pw (28 cls, 21 obj, no pw)
+                    b = [-2.1, -1.8]
+                elif arc == &#39;uFBCE&#39; or arc == &#39;uFBCEpw&#39;:  # unified FocalBCE (5120 obj, 80 classes)
+                    b = [0, -6.5]
+                elif arc == &#39;uFCE&#39;:  # unified FocalCE (64 cls, 1 background + 80 classes)
+                    b = [7.7, -1.1]
+
+                bias = module_list[-1][0].bias.view(len(mask), -1)  # 255 to 3x85
+                bias[:, 4] += b[0] - bias[:, 4].mean()  # obj
+                bias[:, 5:] += b[1] - bias[:, 5:].mean()  # cls
+                # bias = torch.load(&#39;weights/yolov3-spp.bias.pt&#39;)[yolo_index]  # list of tensors [3x85, 3x85, 3x85]
+                module_list[-1][0].bias = torch.nn.Parameter(bias.view(-1))
+                # utils.print_model_biases(model)
+            except:
+                print(&#39;WARNING: smart bias initialization failure.&#39;)
+
+        else:
+            print(&#39;Warning: Unrecognized Layer Type: &#39; + mdef[&#39;type&#39;])
+
+        # Register module list and number of output filters
+        module_list.append(modules)
+        output_filters.append(filters)
+
+    return module_list, routs</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.get_yolo_layers"><code class="name flex">
+<span>def <span class="ident">get_yolo_layers</span></span>(<span>model)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_yolo_layers(model):
+    return [i for i, x in enumerate(model.module_defs) if x[&#39;type&#39;] == &#39;yolo&#39;]  # [82, 94, 106] for yolov3</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.load_darknet_weights"><code class="name flex">
+<span>def <span class="ident">load_darknet_weights</span></span>(<span>self, weights, cutoff=-1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_darknet_weights(self, weights, cutoff=-1):
+    # Parses and loads the weights stored in &#39;weights&#39;
+
+    # Establish cutoffs (load layers between 0 and cutoff. if cutoff = -1 all are loaded)
+    file = Path(weights).name
+    if file == &#39;darknet53.conv.74&#39;:
+        cutoff = 75
+    elif file == &#39;yolov3-tiny.conv.15&#39;:
+        cutoff = 15
+
+    # Read weights file
+    with open(weights, &#39;rb&#39;) as f:
+        # Read Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
+        self.version = np.fromfile(f, dtype=np.int32, count=3)  # (int32) version info: major, minor, revision
+        self.seen = np.fromfile(f, dtype=np.int64, count=1)  # (int64) number of images seen during training
+
+        weights = np.fromfile(f, dtype=np.float32)  # the rest are weights
+
+    ptr = 0
+    for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
+        if mdef[&#39;type&#39;] == &#39;convolutional&#39;:
+            conv_layer = module[0]
+            if mdef[&#39;batch_normalize&#39;]:
+                # Load BN bias, weights, running mean and running variance
+                bn_layer = module[1]
+                num_b = bn_layer.bias.numel()  # Number of biases
+                # Bias
+                bn_b = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.bias)
+                bn_layer.bias.data.copy_(bn_b)
+                ptr += num_b
+                # Weight
+                bn_w = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.weight)
+                bn_layer.weight.data.copy_(bn_w)
+                ptr += num_b
+                # Running Mean
+                bn_rm = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.running_mean)
+                bn_layer.running_mean.data.copy_(bn_rm)
+                ptr += num_b
+                # Running Var
+                bn_rv = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(bn_layer.running_var)
+                bn_layer.running_var.data.copy_(bn_rv)
+                ptr += num_b
+            else:
+                # Load conv. bias
+                num_b = conv_layer.bias.numel()
+                conv_b = torch.from_numpy(weights[ptr:ptr + num_b]).view_as(conv_layer.bias)
+                conv_layer.bias.data.copy_(conv_b)
+                ptr += num_b
+            # Load conv. weights
+            num_w = conv_layer.weight.numel()
+            conv_w = torch.from_numpy(weights[ptr:ptr + num_w]).view_as(conv_layer.weight)
+            conv_layer.weight.data.copy_(conv_w)
+            ptr += num_w</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.save_weights"><code class="name flex">
+<span>def <span class="ident">save_weights</span></span>(<span>self, path='model.weights', cutoff=-1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_weights(self, path=&#39;model.weights&#39;, cutoff=-1):
+    # Converts a PyTorch model to Darket format (*.pt to *.weights)
+    # Note: Does not work if model.fuse() is applied
+    with open(path, &#39;wb&#39;) as f:
+        # Write Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
+        self.version.tofile(f)  # (int32) version info: major, minor, revision
+        self.seen.tofile(f)  # (int64) number of images seen during training
+
+        # Iterate through layers
+        for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
+            if mdef[&#39;type&#39;] == &#39;convolutional&#39;:
+                conv_layer = module[0]
+                # If batch norm, load bn first
+                if mdef[&#39;batch_normalize&#39;]:
+                    bn_layer = module[1]
+                    bn_layer.bias.data.cpu().numpy().tofile(f)
+                    bn_layer.weight.data.cpu().numpy().tofile(f)
+                    bn_layer.running_mean.data.cpu().numpy().tofile(f)
+                    bn_layer.running_var.data.cpu().numpy().tofile(f)
+                # Load conv bias
+                else:
+                    conv_layer.bias.data.cpu().numpy().tofile(f)
+                # Load conv weights
+                conv_layer.weight.data.cpu().numpy().tofile(f)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="7_yolov3.lib.models.Darknet"><code class="flex name class">
+<span>class <span class="ident">Darknet</span></span>
+<span>(</span><span>cfg, img_size=(416, 416), arc='default')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Darknet(nn.Module):
+    # YOLOv3 object detection model
+
+    def __init__(self, cfg, img_size=(416, 416), arc=&#39;default&#39;):
+        super(Darknet, self).__init__()
+
+        self.module_defs = parse_model_cfg(cfg)
+        self.module_list, self.routs = create_modules(self.module_defs, img_size, arc)
+        self.yolo_layers = get_yolo_layers(self)
+
+        # Darknet Header https://github.com/AlexeyAB/darknet/issues/2914#issuecomment-496675346
+        self.version = np.array([0, 2, 5], dtype=np.int32)  # (int32) version info: major, minor, revision
+        self.seen = np.array([0], dtype=np.int64)  # (int64) number of images seen during training
+
+    def forward(self, x, var=None):
+        img_size = x.shape[-2:]
+        layer_outputs = []
+        output = []
+
+        for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
+            mtype = mdef[&#39;type&#39;]
+            if mtype in [&#39;convolutional&#39;, &#39;upsample&#39;, &#39;maxpool&#39;]:
+                x = module(x)
+            elif mtype == &#39;route&#39;:
+                layers = [int(x) for x in mdef[&#39;layers&#39;].split(&#39;,&#39;)]
+                if len(layers) == 1:
+                    x = layer_outputs[layers[0]]
+                else:
+                    try:
+                        x = torch.cat([layer_outputs[i] for i in layers], 1)
+                    except:  # apply stride 2 for darknet reorg layer
+                        layer_outputs[layers[1]] = F.interpolate(layer_outputs[layers[1]], scale_factor=[0.5, 0.5])
+                        x = torch.cat([layer_outputs[i] for i in layers], 1)
+                    # print(&#39;&#39;), [print(layer_outputs[i].shape) for i in layers], print(x.shape)
+            elif mtype == &#39;shortcut&#39;:
+                x = x + layer_outputs[int(mdef[&#39;from&#39;])]
+            elif mtype == &#39;yolo&#39;:
+                output.append(module(x, img_size))
+            layer_outputs.append(x if i in self.routs else [])
+
+        if self.training:
+            return output
+        elif ONNX_EXPORT:
+            x = [torch.cat(x, 0) for x in zip(*output)]
+            return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
+        else:
+            io, p = list(zip(*output))  # inference output, training output
+            return torch.cat(io, 1), p
+
+    def fuse(self):
+        # Fuse Conv2d + BatchNorm2d layers throughout model
+        fused_list = nn.ModuleList()
+        for a in list(self.children())[0]:
+            if isinstance(a, nn.Sequential):
+                for i, b in enumerate(a):
+                    if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
+                        # fuse this bn layer with the previous conv2d layer
+                        conv = a[i - 1]
+                        fused = torch_utils.fuse_conv_and_bn(conv, b)
+                        a = nn.Sequential(fused, *list(a.children())[i + 1:])
+                        break
+            fused_list.append(a)
+        self.module_list = fused_list</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="7_yolov3.lib.models.Darknet.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x, var=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x, var=None):
+    img_size = x.shape[-2:]
+    layer_outputs = []
+    output = []
+
+    for i, (mdef, module) in enumerate(zip(self.module_defs, self.module_list)):
+        mtype = mdef[&#39;type&#39;]
+        if mtype in [&#39;convolutional&#39;, &#39;upsample&#39;, &#39;maxpool&#39;]:
+            x = module(x)
+        elif mtype == &#39;route&#39;:
+            layers = [int(x) for x in mdef[&#39;layers&#39;].split(&#39;,&#39;)]
+            if len(layers) == 1:
+                x = layer_outputs[layers[0]]
+            else:
+                try:
+                    x = torch.cat([layer_outputs[i] for i in layers], 1)
+                except:  # apply stride 2 for darknet reorg layer
+                    layer_outputs[layers[1]] = F.interpolate(layer_outputs[layers[1]], scale_factor=[0.5, 0.5])
+                    x = torch.cat([layer_outputs[i] for i in layers], 1)
+                # print(&#39;&#39;), [print(layer_outputs[i].shape) for i in layers], print(x.shape)
+        elif mtype == &#39;shortcut&#39;:
+            x = x + layer_outputs[int(mdef[&#39;from&#39;])]
+        elif mtype == &#39;yolo&#39;:
+            output.append(module(x, img_size))
+        layer_outputs.append(x if i in self.routs else [])
+
+    if self.training:
+        return output
+    elif ONNX_EXPORT:
+        x = [torch.cat(x, 0) for x in zip(*output)]
+        return x[0], torch.cat(x[1:3], 1)  # scores, boxes: 3780x80, 3780x4
+    else:
+        io, p = list(zip(*output))  # inference output, training output
+        return torch.cat(io, 1), p</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.Darknet.fuse"><code class="name flex">
+<span>def <span class="ident">fuse</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fuse(self):
+    # Fuse Conv2d + BatchNorm2d layers throughout model
+    fused_list = nn.ModuleList()
+    for a in list(self.children())[0]:
+        if isinstance(a, nn.Sequential):
+            for i, b in enumerate(a):
+                if isinstance(b, nn.modules.batchnorm.BatchNorm2d):
+                    # fuse this bn layer with the previous conv2d layer
+                    conv = a[i - 1]
+                    fused = torch_utils.fuse_conv_and_bn(conv, b)
+                    a = nn.Sequential(fused, *list(a.children())[i + 1:])
+                    break
+        fused_list.append(a)
+    self.module_list = fused_list</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="7_yolov3.lib.models.MemoryEfficientSwish"><code class="flex name class">
+<span>class <span class="ident">MemoryEfficientSwish</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MemoryEfficientSwish(nn.Module):
+    def forward(self, x):
+        return SwishImplementation.apply(x)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="7_yolov3.lib.models.MemoryEfficientSwish.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    return SwishImplementation.apply(x)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="7_yolov3.lib.models.Mish"><code class="flex name class">
+<span>class <span class="ident">Mish</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
+    def forward(self, x):
+        return x.mul_(F.softplus(x).tanh())</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="7_yolov3.lib.models.Mish.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    return x.mul_(F.softplus(x).tanh())</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="7_yolov3.lib.models.Swish"><code class="flex name class">
+<span>class <span class="ident">Swish</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Swish(nn.Module):
+    def forward(self, x):
+        return x.mul_(torch.sigmoid(x))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="7_yolov3.lib.models.Swish.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    return x.mul_(torch.sigmoid(x))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="7_yolov3.lib.models.SwishImplementation"><code class="flex name class">
+<span>class <span class="ident">SwishImplementation</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Records operation history and defines formulas for differentiating ops.</p>
+<p>Every operation performed on :class:<code>Tensor</code> s creates a new function
+object, that performs the computation, and records that it happened.
+The history is retained in the form of a DAG of functions, with edges
+denoting data dependencies (<code>input &lt;- output</code>). Then, when backward is
+called, the graph is processed in the topological ordering, by calling
+:func:<code>backward</code> methods of each :class:<code>Function</code> object, and passing
+returned gradients on to next :class:<code>Function</code> s.</p>
+<p>Normally, the only way users interact with functions is by creating
+subclasses and defining new operations. This is a recommended way of
+extending torch.autograd.</p>
+<p>Each function object is meant to be used only once (in the forward pass).</p>
+<p>Examples::</p>
+<pre><code>&gt;&gt;&gt; class Exp(Function):
+&gt;&gt;&gt;
+&gt;&gt;&gt;     @staticmethod
+&gt;&gt;&gt;     def forward(ctx, i):
+&gt;&gt;&gt;         result = i.exp()
+&gt;&gt;&gt;         ctx.save_for_backward(result)
+&gt;&gt;&gt;         return result
+&gt;&gt;&gt;
+&gt;&gt;&gt;     @staticmethod
+&gt;&gt;&gt;     def backward(ctx, grad_output):
+&gt;&gt;&gt;         result, = ctx.saved_tensors
+&gt;&gt;&gt;         return grad_output * result
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SwishImplementation(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, i):
+        ctx.save_for_backward(i)
+        return i * torch.sigmoid(i)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        sigmoid_i = torch.sigmoid(ctx.saved_variables[0])
+        return grad_output * (sigmoid_i * (1 + ctx.saved_variables[0] * (1 - sigmoid_i)))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.autograd.function.Function</li>
+<li>torch._C._FunctionBase</li>
+<li>torch.autograd.function._ContextMethodMixin</li>
+<li>torch.autograd.function._HookMixin</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="7_yolov3.lib.models.SwishImplementation.backward"><code class="name flex">
+<span>def <span class="ident">backward</span></span>(<span>ctx, grad_output)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines a formula for differentiating the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context :attr:<code>ctx</code> as the first argument, followed by
+as many outputs did :func:<code>forward</code> return, and it should return as many
+tensors, as there were inputs to :func:<code>forward</code>. Each argument is the
+gradient w.r.t the given output, and each returned value should be the
+gradient w.r.t. the corresponding input.</p>
+<p>The context can be used to retrieve tensors saved during the forward
+pass. It also has an attribute :attr:<code>ctx.needs_input_grad</code> as a tuple
+of booleans representing whether each input needs gradient. E.g.,
+:func:<code>backward</code> will have <code>ctx.needs_input_grad[0] = True</code> if the
+first input to :func:<code>forward</code> needs gradient computated w.r.t. the
+output.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def backward(ctx, grad_output):
+    sigmoid_i = torch.sigmoid(ctx.saved_variables[0])
+    return grad_output * (sigmoid_i * (1 + ctx.saved_variables[0] * (1 - sigmoid_i)))</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.models.SwishImplementation.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>ctx, i)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Performs the operation.</p>
+<p>This function is to be overridden by all subclasses.</p>
+<p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p>
+<p>The context can be used to store tensors that can be then retrieved
+during the backward pass.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def forward(ctx, i):
+    ctx.save_for_backward(i)
+    return i * torch.sigmoid(i)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="7_yolov3.lib.models.YOLOLayer"><code class="flex name class">
+<span>class <span class="ident">YOLOLayer</span></span>
+<span>(</span><span>anchors, nc, img_size, yolo_index, arc)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class YOLOLayer(nn.Module):
+    def __init__(self, anchors, nc, img_size, yolo_index, arc):
+        super(YOLOLayer, self).__init__()
+
+        self.anchors = torch.Tensor(anchors)
+        self.na = len(anchors)  # number of anchors (3)
+        self.nc = nc  # number of classes (80)
+        self.no = nc + 5  # number of outputs
+        self.nx = 0  # initialize number of x gridpoints
+        self.ny = 0  # initialize number of y gridpoints
+        self.arc = arc
+
+        if ONNX_EXPORT:  # grids must be computed in __init__
+            stride = [32, 16, 8][yolo_index]  # stride of this layer
+            nx = int(img_size[1] / stride)  # number x grid points
+            ny = int(img_size[0] / stride)  # number y grid points
+            create_grids(self, img_size, (nx, ny))
+
+    def forward(self, p, img_size, var=None):
+        if ONNX_EXPORT:
+            bs = 1  # batch size
+        else:
+            bs, _, ny, nx = p.shape  # bs, 255, 13, 13
+            if (self.nx, self.ny) != (nx, ny):
+                create_grids(self, img_size, (nx, ny), p.device, p.dtype)
+
+        # p.view(bs, 255, 13, 13) -- &gt; (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
+        p = p.view(bs, self.na, self.no, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+
+        if self.training:
+            return p
+
+        elif ONNX_EXPORT:
+            # Constants CAN NOT BE BROADCAST, ensure correct shape!
+            m = self.na * self.nx * self.ny
+            grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(m, 2)
+            anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(m, 2) / self.ng
+
+            p = p.view(m, self.no)
+            xy = torch.sigmoid(p[:, 0:2]) + grid_xy  # x, y
+            wh = torch.exp(p[:, 2:4]) * anchor_wh  # width, height
+            p_cls = torch.sigmoid(p[:, 5:self.no]) * torch.sigmoid(p[:, 4:5])  # conf
+            return p_cls, xy / self.ng, wh
+
+        else:  # inference
+            # s = 1.5  # scale_xy  (pxy = pxy * s - (s - 1) / 2)
+            io = p.clone()  # inference output
+            io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid_xy  # xy
+            io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
+            # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
+            io[..., :4] *= self.stride
+
+            if &#39;default&#39; in self.arc:  # seperate obj and cls
+                torch.sigmoid_(io[..., 4:])
+            elif &#39;BCE&#39; in self.arc:  # unified BCE (80 classes)
+                torch.sigmoid_(io[..., 5:])
+                io[..., 4] = 1
+            elif &#39;CE&#39; in self.arc:  # unified CE (1 background + 80 classes)
+                io[..., 4:] = F.softmax(io[..., 4:], dim=4)
+                io[..., 4] = 1
+
+            if self.nc == 1:
+                io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
+
+            # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
+            return io.view(bs, -1, self.no), p</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="7_yolov3.lib.models.YOLOLayer.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, p, img_size, var=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, p, img_size, var=None):
+    if ONNX_EXPORT:
+        bs = 1  # batch size
+    else:
+        bs, _, ny, nx = p.shape  # bs, 255, 13, 13
+        if (self.nx, self.ny) != (nx, ny):
+            create_grids(self, img_size, (nx, ny), p.device, p.dtype)
+
+    # p.view(bs, 255, 13, 13) -- &gt; (bs, 3, 13, 13, 85)  # (bs, anchors, grid, grid, classes + xywh)
+    p = p.view(bs, self.na, self.no, self.ny, self.nx).permute(0, 1, 3, 4, 2).contiguous()  # prediction
+
+    if self.training:
+        return p
+
+    elif ONNX_EXPORT:
+        # Constants CAN NOT BE BROADCAST, ensure correct shape!
+        m = self.na * self.nx * self.ny
+        grid_xy = self.grid_xy.repeat((1, self.na, 1, 1, 1)).view(m, 2)
+        anchor_wh = self.anchor_wh.repeat((1, 1, self.nx, self.ny, 1)).view(m, 2) / self.ng
+
+        p = p.view(m, self.no)
+        xy = torch.sigmoid(p[:, 0:2]) + grid_xy  # x, y
+        wh = torch.exp(p[:, 2:4]) * anchor_wh  # width, height
+        p_cls = torch.sigmoid(p[:, 5:self.no]) * torch.sigmoid(p[:, 4:5])  # conf
+        return p_cls, xy / self.ng, wh
+
+    else:  # inference
+        # s = 1.5  # scale_xy  (pxy = pxy * s - (s - 1) / 2)
+        io = p.clone()  # inference output
+        io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid_xy  # xy
+        io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
+        # io[..., 2:4] = ((torch.sigmoid(io[..., 2:4]) * 2) ** 3) * self.anchor_wh  # wh power method
+        io[..., :4] *= self.stride
+
+        if &#39;default&#39; in self.arc:  # seperate obj and cls
+            torch.sigmoid_(io[..., 4:])
+        elif &#39;BCE&#39; in self.arc:  # unified BCE (80 classes)
+            torch.sigmoid_(io[..., 5:])
+            io[..., 4] = 1
+        elif &#39;CE&#39; in self.arc:  # unified CE (1 background + 80 classes)
+            io[..., 4:] = F.softmax(io[..., 4:], dim=4)
+            io[..., 4] = 1
+
+        if self.nc == 1:
+            io[..., 5] = 1  # single-class model https://github.com/ultralytics/yolov3/issues/235
+
+        # reshape from [1, 3, 13, 13, 85] to [1, 507, 85]
+        return io.view(bs, -1, self.no), p</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="7_yolov3.lib" href="index.html">7_yolov3.lib</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.attempt_download" href="#7_yolov3.lib.models.attempt_download">attempt_download</a></code></li>
+<li><code><a title="7_yolov3.lib.models.convert" href="#7_yolov3.lib.models.convert">convert</a></code></li>
+<li><code><a title="7_yolov3.lib.models.create_grids" href="#7_yolov3.lib.models.create_grids">create_grids</a></code></li>
+<li><code><a title="7_yolov3.lib.models.create_modules" href="#7_yolov3.lib.models.create_modules">create_modules</a></code></li>
+<li><code><a title="7_yolov3.lib.models.get_yolo_layers" href="#7_yolov3.lib.models.get_yolo_layers">get_yolo_layers</a></code></li>
+<li><code><a title="7_yolov3.lib.models.load_darknet_weights" href="#7_yolov3.lib.models.load_darknet_weights">load_darknet_weights</a></code></li>
+<li><code><a title="7_yolov3.lib.models.save_weights" href="#7_yolov3.lib.models.save_weights">save_weights</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="7_yolov3.lib.models.Darknet" href="#7_yolov3.lib.models.Darknet">Darknet</a></code></h4>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.Darknet.forward" href="#7_yolov3.lib.models.Darknet.forward">forward</a></code></li>
+<li><code><a title="7_yolov3.lib.models.Darknet.fuse" href="#7_yolov3.lib.models.Darknet.fuse">fuse</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="7_yolov3.lib.models.MemoryEfficientSwish" href="#7_yolov3.lib.models.MemoryEfficientSwish">MemoryEfficientSwish</a></code></h4>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.MemoryEfficientSwish.forward" href="#7_yolov3.lib.models.MemoryEfficientSwish.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="7_yolov3.lib.models.Mish" href="#7_yolov3.lib.models.Mish">Mish</a></code></h4>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.Mish.forward" href="#7_yolov3.lib.models.Mish.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="7_yolov3.lib.models.Swish" href="#7_yolov3.lib.models.Swish">Swish</a></code></h4>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.Swish.forward" href="#7_yolov3.lib.models.Swish.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="7_yolov3.lib.models.SwishImplementation" href="#7_yolov3.lib.models.SwishImplementation">SwishImplementation</a></code></h4>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.SwishImplementation.backward" href="#7_yolov3.lib.models.SwishImplementation.backward">backward</a></code></li>
+<li><code><a title="7_yolov3.lib.models.SwishImplementation.forward" href="#7_yolov3.lib.models.SwishImplementation.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="7_yolov3.lib.models.YOLOLayer" href="#7_yolov3.lib.models.YOLOLayer">YOLOLayer</a></code></h4>
+<ul class="">
+<li><code><a title="7_yolov3.lib.models.YOLOLayer.forward" href="#7_yolov3.lib.models.YOLOLayer.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

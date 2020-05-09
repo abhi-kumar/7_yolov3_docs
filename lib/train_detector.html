@@ -1,0 +1,2713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>7_yolov3.lib.train_detector API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>7_yolov3.lib.train_detector</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import os
+import sys
+import numpy as np
+
+import torch.distributed as dist
+import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
+
+from validate import validate # import test.py to get mAP after each epoch
+
+from models import *
+from utils.datasets import *
+from utils.utils import *
+
+from torch.utils.tensorboard import SummaryWriter
+
+def isnotebook():
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == &#39;ZMQInteractiveShell&#39;:
+            return True   # Jupyter notebook or qtconsole
+        elif shell == &#39;TerminalInteractiveShell&#39;:
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False
+if(isnotebook()):
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm as tqdm
+
+from update_cfg import update
+from apex import amp
+
+
+class Detector():
+    &#39;&#39;&#39;
+    Class to train a detector
+
+    Args:
+        verbose (int): Set verbosity levels
+                        0 - Print Nothing
+                        1 - Print desired details
+    &#39;&#39;&#39;
+    def __init__(self, verbose=1):
+        self.system_dict = {};
+        self.system_dict[&#34;verbose&#34;] = verbose;
+        self.system_dict[&#34;local&#34;] = {};
+        self.system_dict[&#34;fixed_params&#34;] = {};
+        self.system_dict[&#34;dataset&#34;] = {};
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;] = {};
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;] = {};
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;] = False;
+        self.system_dict[&#34;params&#34;] = {};
+
+        self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = True
+        try:  # Mixed precision training https://github.com/NVIDIA/apex
+            from apex import amp
+        except:
+            self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = False  # not installed
+
+
+        self.set_fixed_params();
+
+
+    def set_fixed_params(self):
+        &#39;&#39;&#39;
+        Internal function: Set fixed parameters
+
+        Args:
+            None
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] = &#39;weights&#39; + os.sep  
+        self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;] = self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;
+        self.system_dict[&#34;fixed_params&#34;][&#34;best&#34;] = self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;
+        self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;] = &#39;results.txt&#39;
+
+        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;] = {&#39;giou&#39;: 3.54,  # giou loss gain
+                                                   &#39;cls&#39;: 37.4,  # cls loss gain
+                                                   &#39;cls_pw&#39;: 1.0,  # cls BCELoss positive_weight
+                                                   &#39;obj&#39;: 49.5,  # obj loss gain (*=img_size/320 if img_size != 320)
+                                                   &#39;obj_pw&#39;: 1.0,  # obj BCELoss positive_weight
+                                                   &#39;iou_t&#39;: 0.225,  # iou training threshold
+                                                   &#39;lr0&#39;: 0.00579,  # initial learning rate (SGD=5E-3, Adam=5E-4)
+                                                   &#39;lrf&#39;: -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
+                                                   &#39;momentum&#39;: 0.937,  # SGD momentum
+                                                   &#39;weight_decay&#39;: 0.000484,  # optimizer weight decay
+                                                   &#39;fl_gamma&#39;: 0.5,  # focal loss gamma
+                                                   &#39;hsv_h&#39;: 0.0138,  # image HSV-Hue augmentation (fraction)
+                                                   &#39;hsv_s&#39;: 0.678,  # image HSV-Saturation augmentation (fraction)
+                                                   &#39;hsv_v&#39;: 0.36,  # image HSV-Value augmentation (fraction)
+                                                   &#39;degrees&#39;: 1.98,  # image rotation (+/- deg)
+                                                   &#39;translate&#39;: 0.05,  # image translation (+/- fraction)
+                                                   &#39;scale&#39;: 0.05,  # image scale (+/- gain)
+                                                   &#39;shear&#39;: 0.641}  # image shear (+/- deg)
+
+        # Overwrite hyp with hyp*.txt (optional)
+        f = glob.glob(&#39;hyp*.txt&#39;)
+        if f:
+            print(&#39;Using %s&#39; % f[0])
+            for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
+                hyp[k] = v
+
+
+    def set_train_dataset(self, img_dir, label_dir, class_list, batch_size=2, img_size=416, cache_images=False):
+        &#39;&#39;&#39;
+        User function: Set training dataset parameters
+
+        Dataset Directory Structure
+
+                    root_dir
+                      |
+                      |-----------images (img_dir)
+                      |              |
+                      |              |------------------img1.jpg
+                      |              |------------------img2.jpg
+                      |              |------------------.........(and so on)
+                      |
+                      |-----------labels (label_dir)
+                      |              |
+                      |              |------------------img1.txt
+                      |              |------------------img2.txt
+                      |              |------------------.........(and so on)
+                      |
+                      |------------classes.txt 
+                      
+
+            Classes file
+             
+                 List of classes in every new line.
+                 The order corresponds to the IDs in annotation files
+                 
+                 Eg.
+                      class1               (------------------------------&gt; if will be 0)
+                      class2               (------------------------------&gt; if will be 1)
+                      class3               (------------------------------&gt; if will be 2)
+                      class4               (------------------------------&gt; if will be 3)
+                      
+
+            Annotation file format
+
+                CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+                
+                (All the coordinates should be normalized)
+                (X coordinates divided by width of image, Y coordinates divided by height of image)
+                
+                Ex. (One line per bounding box of object in image)
+                    class_id x1 y1 w h
+                    class_id x1 y1 w h
+                    ..... (and so on)
+        
+
+        Args:
+            img_dir (str): Relative path to folder containing all training images
+            label_dir (str): Relative path to folder containing all training labels text files
+            class_list (list): List of all classes in dataset
+            batch_size (int): Mini batch sampling size for training epochs
+            cache_images (bool): If True, images are cached for faster loading
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;img_dir&#34;] = img_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;label_dir&#34;] = label_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;class_list&#34;] = class_list;
+        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] = batch_size;
+        self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] = batch_size;
+        self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = [img_size];
+        self.system_dict[&#34;params&#34;][&#34;img_size_selected&#34;] = [img_size];
+        self.system_dict[&#34;params&#34;][&#34;cache_images&#34;] = cache_images;
+
+
+    def set_val_dataset(self, img_dir, label_dir):
+        &#39;&#39;&#39;
+        User function: Set training dataset parameters
+
+        Dataset Directory Structure
+
+                    root_dir
+                      |
+                      |-----------images (img_dir)
+                      |              |
+                      |              |------------------img1.jpg
+                      |              |------------------img2.jpg
+                      |              |------------------.........(and so on)
+                      |
+                      |-----------labels (label_dir)
+                      |              |
+                      |              |------------------img1.txt
+                      |              |------------------img2.txt
+                      |              |------------------.........(and so on)
+                      |
+                      |------------classes.txt 
+                      
+
+            Classes file
+             
+                 List of classes in every new line.
+                 The order corresponds to the IDs in annotation files
+                 
+                 Eg.
+                      class1               (------------------------------&gt; if will be 0)
+                      class2               (------------------------------&gt; if will be 1)
+                      class3               (------------------------------&gt; if will be 2)
+                      class4               (------------------------------&gt; if will be 3)
+                      
+
+            Annotation file format
+
+                CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+                
+                (All the coordinates should be normalized)
+                (X coordinates divided by width of image, Y coordinates divided by height of image)
+                
+                Ex. (One line per bounding box of object in image)
+                    class_id x1 y1 w h
+                    class_id x1 y1 w h
+                    ..... (and so on)
+        
+
+        Args:
+            img_dir (str): Relative path to folder containing all validation images
+            label_dir (str): Relative path to folder containing all validation labels text files
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;] = img_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;] = label_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;] = True;
+
+
+
+    def set_model(self, model_name=&#34;yolov3&#34;):
+        &#39;&#39;&#39;
+        User function: Set Model parameters
+
+            Available Models
+                yolov3
+                yolov3s
+                yolov3-spp
+                yolov3-spp3
+                yolov3-tiny
+                yolov3-spp-matrix
+                csresnext50-panet-spp
+
+
+        Args:
+            model_name (str): Select model from available models
+            gpu_devices (list): List of GPU Device IDs to be used in training
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        tmp_cfg = os.path.dirname(os.path.realpath(__file__)) + &#34;/cfg/&#34; + model_name + &#34;.cfg&#34;;
+        cmd = &#34;cp &#34; + tmp_cfg + &#34; &#34; + os.getcwd() + &#34;/&#34; + model_name + &#34;.cfg&#34;;
+        os.system(cmd);
+        self.system_dict[&#34;params&#34;][&#34;cfg&#34;] = model_name + &#34;.cfg&#34;;
+
+
+
+    def set_hyperparams(self, optimizer=&#34;sgd&#34;, lr=0.00579, multi_scale=False, evolve=False, num_generations=2, 
+                        mixed_precision=True, gpu_devices=&#34;0&#34;):
+        &#39;&#39;&#39;
+        User function: Set hyper parameters
+            Available optimizers
+                sgd
+                adam
+
+        Args:
+            optimizer (str): Select the right optimizer
+            lr (float): Initial learning rate for training
+            multi_scale (bool): If True, run multi-scale training.
+            evolve (bool): If True, runs multiple epochs in every generation and updates hyper-params accordingly
+            mixed_precision (bool): If True, uses both 16-bit and 32-bit floating-point types in a model during training to make it run faster and use less memory.
+            gpu_devices (str): List of all GPU device IDs separated by a comma in a string
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;] = multi_scale;
+        if(optimizer == &#34;sgd&#34;):
+            self.system_dict[&#34;params&#34;][&#34;adam&#34;] = False;
+        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#34;lr0&#34;] = lr;
+        self.system_dict[&#34;params&#34;][&#34;rect&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;resume&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;nosave&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;notest&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;evolve&#34;] = evolve;
+        self.system_dict[&#34;params&#34;][&#34;num_generations&#34;] = num_generations;
+        self.system_dict[&#34;params&#34;][&#34;bucket&#34;] = &#34;&#34;;
+        self.system_dict[&#34;params&#34;][&#34;weights&#34;] = &#34;&#34;;
+        self.system_dict[&#34;params&#34;][&#34;arc&#34;] = &#34;default&#34;;
+        self.system_dict[&#34;params&#34;][&#34;name&#34;] = &#34;&#34;;
+        self.system_dict[&#34;params&#34;][&#34;device&#34;] = gpu_devices;
+        self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = mixed_precision;
+
+
+    def setup(self):
+        &#39;&#39;&#39;
+        Internal function: Setup all the dataset, model and data params 
+
+        Args:
+            None
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        if(not os.path.isdir(&#34;weights&#34;)):
+            os.mkdir(&#34;weights&#34;);
+
+
+        #Device Setup
+        self.system_dict[&#34;params&#34;][&#34;weights&#34;] = last if self.system_dict[&#34;params&#34;][&#34;resume&#34;] else self.system_dict[&#34;params&#34;][&#34;weights&#34;]
+        self.system_dict[&#34;local&#34;][&#34;device&#34;] = torch_utils.select_device(self.system_dict[&#34;params&#34;][&#34;device&#34;], 
+                                                                        apex=self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;], 
+                                                                        batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;])
+        if self.system_dict[&#34;local&#34;][&#34;device&#34;].type == &#39;cpu&#39;:
+            self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = False
+
+        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;] = None
+        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;] = SummaryWriter()
+
+
+        #Data Setup
+        img_size, img_size_test = self.system_dict[&#34;params&#34;][&#34;img_size&#34;] if len(self.system_dict[&#34;params&#34;][&#34;img_size&#34;]) == 2 else self.system_dict[&#34;params&#34;][&#34;img_size&#34;] * 2 
+
+        init_seeds()
+        if self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;]:
+            img_sz_min = round(img_size / 32 / 1.5)
+            img_sz_max = round(img_size / 32 * 1.5)
+            img_size = img_sz_max * 32  # initiate with maximum multi_scale size
+            print(&#39;Using multi-scale %g - %g&#39; % (img_sz_min * 32, img_size))
+
+            self.system_dict[&#34;params&#34;][&#34;img_sz_min&#34;] = img_sz_min;
+            self.system_dict[&#34;params&#34;][&#34;img_sz_max&#34;] = img_sz_max;
+
+        self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = img_size;
+        self.system_dict[&#34;params&#34;][&#34;img_size_test&#34;] = img_size_test;
+
+        f = open(self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;class_list&#34;], &#39;r&#39;);
+        lines = f.readlines();
+        f.close();
+
+        self.system_dict[&#34;local&#34;][&#34;classes&#34;] = [];
+        for i in range(len(lines)):
+            if(lines[i] != &#34;&#34; and lines[i] != &#34;\n&#34; ):
+                self.system_dict[&#34;local&#34;][&#34;classes&#34;].append(lines[i]);
+        self.system_dict[&#34;local&#34;][&#34;num_classes&#34;] = int(len(self.system_dict[&#34;local&#34;][&#34;classes&#34;]));
+        if(self.system_dict[&#34;local&#34;][&#34;num_classes&#34;] == 1):
+            self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] = True;
+        else:
+            self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] = False;
+
+
+        self.system_dict[&#34;local&#34;][&#34;nc&#34;] = 1 if self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] else self.system_dict[&#34;local&#34;][&#34;num_classes&#34;]
+
+        # Remove previous results
+        for f in glob.glob(&#39;*_batch*.png&#39;) + glob.glob(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;]):
+            os.remove(f)
+
+        if &#39;pw&#39; not in self.system_dict[&#34;params&#34;][&#34;arc&#34;]:  # remove BCELoss positive weights
+            self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;cls_pw&#39;] = 1.
+            self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;obj_pw&#39;] = 1.
+        
+
+
+        #Update Config file
+        update(self.system_dict[&#34;params&#34;][&#34;cfg&#34;], self.system_dict[&#34;local&#34;][&#34;num_classes&#34;]);
+
+        #Model
+        self.system_dict[&#34;local&#34;][&#34;model&#34;] = Darknet(self.system_dict[&#34;params&#34;][&#34;cfg&#34;], 
+                                            arc=self.system_dict[&#34;params&#34;][&#34;arc&#34;]).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+        attempt_download(self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+
+        # Optimizer
+        pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
+        for k, v in dict(self.system_dict[&#34;local&#34;][&#34;model&#34;].named_parameters()).items():
+            if &#39;.bias&#39; in k:
+                pg2 += [v]  # biases
+            elif &#39;Conv2d.weight&#39; in k:
+                pg1 += [v]  # apply weight_decay
+            else:
+                pg0 += [v]  # all else
+
+        if self.system_dict[&#34;params&#34;][&#34;adam&#34;]:
+            # hyp[&#39;lr0&#39;] *= 0.1  # reduce lr (i.e. SGD=5E-3, Adam=5E-4)
+            self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = optim.Adam(pg0, lr=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;])
+            # optimizer = AdaBound(pg0, lr=hyp[&#39;lr0&#39;], final_lr=0.1)
+        else:
+            self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = optim.SGD(pg0, lr=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;], 
+                                                                    momentum=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;momentum&#39;], nesterov=True)
+
+        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].add_param_group({&#39;params&#39;: pg1, &#39;weight_decay&#39;: self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;weight_decay&#39;]})  # add pg1 with weight_decay
+        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].add_param_group({&#39;params&#39;: pg2})  # add pg2 (biases)
+        del pg0, pg1, pg2
+
+
+        self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] = 0
+        self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = float(&#39;inf&#39;)
+
+        if self.system_dict[&#34;params&#34;][&#34;weights&#34;].endswith(&#39;.pt&#39;):  
+            chkpt = torch.load(self.system_dict[&#34;params&#34;][&#34;weights&#34;], map_location=self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+            # load model
+            try:
+                chkpt[&#39;model&#39;] = {k: v for k, v in chkpt[&#39;model&#39;].items() if self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict()[k].numel() == v.numel()}
+                self.system_dict[&#34;local&#34;][&#34;model&#34;].load_state_dict(chkpt[&#39;model&#39;], strict=False)
+            except KeyError as e:
+                s = &#34;%s is not compatible with %s. Specify --weights &#39;&#39; or specify a --cfg compatible with %s. &#34; \
+                    &#34;See https://github.com/ultralytics/yolov3/issues/657&#34; % (self.system_dict[&#34;params&#34;][&#34;weights&#34;], self.system_dict[&#34;params&#34;][&#34;cfg&#34;], 
+                                                                              self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+                raise KeyError(s) from e
+
+            # load optimizer
+            if chkpt[&#39;optimizer&#39;] is not None:
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].load_state_dict(chkpt[&#39;optimizer&#39;])
+                self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = chkpt[&#39;best_fitness&#39;]
+
+            # load results
+            if chkpt.get(&#39;training_results&#39;) is not None:
+                with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;w&#39;) as file:
+                    file.write(chkpt[&#39;training_results&#39;])
+
+            self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] = chkpt[&#39;epoch&#39;] + 1
+            del chkpt
+
+        elif len(self.system_dict[&#34;params&#34;][&#34;weights&#34;]) &gt; 0:  # darknet format
+            # possible weights are &#39;*.weights&#39;, &#39;yolov3-tiny.conv.15&#39;,  &#39;darknet53.conv.74&#39; etc.
+            load_darknet_weights(self.system_dict[&#34;local&#34;][&#34;model&#34;], self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+
+
+        #Scheduler
+        self.system_dict[&#34;local&#34;][&#34;scheduler&#34;] = lr_scheduler.MultiStepLR(self.system_dict[&#34;local&#34;][&#34;optimizer&#34;], 
+                                                    milestones=[round(self.system_dict[&#34;params&#34;][&#34;epochs&#34;] * x) for x in [0.8, 0.9]], gamma=0.1)
+        self.system_dict[&#34;local&#34;][&#34;scheduler&#34;].last_epoch = self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] - 1
+
+
+        if self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;]:
+            self.system_dict[&#34;local&#34;][&#34;model&#34;], self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = amp.initialize(self.system_dict[&#34;local&#34;][&#34;model&#34;], 
+                                                                                                        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;], 
+                                                                                                        opt_level=&#39;O1&#39;, verbosity=0)
+            
+            
+        # Initialize distributed training
+        if self.system_dict[&#34;local&#34;][&#34;device&#34;].type != &#39;cpu&#39; and torch.cuda.device_count() &gt; 1:
+            dist.init_process_group(backend=&#39;nccl&#39;, 
+                                    init_method=&#39;tcp://127.0.0.1:9999&#39;,  
+                                    world_size=1,  
+                                    rank=0)  
+            self.system_dict[&#34;local&#34;][&#34;model&#34;] = torch.nn.parallel.DistributedDataParallel(self.system_dict[&#34;local&#34;][&#34;model&#34;], 
+                                                                                            find_unused_parameters=True)
+            self.system_dict[&#34;local&#34;][&#34;model&#34;].yolo_layers = self.system_dict[&#34;local&#34;][&#34;model&#34;].module.yolo_layers 
+
+
+
+        # Dataset
+        self.system_dict[&#34;local&#34;][&#34;dataset&#34;] = LoadImagesAndLabels(self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;img_dir&#34;], 
+                                        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;label_dir&#34;],
+                                        self.system_dict[&#34;params&#34;][&#34;img_size&#34;], 
+                                        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;],
+                                        augment=True,
+                                        hyp=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;], 
+                                        rect=self.system_dict[&#34;params&#34;][&#34;rect&#34;],  
+                                        cache_labels=True,
+                                        cache_images=self.system_dict[&#34;params&#34;][&#34;cache_images&#34;],
+                                        single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;])
+        
+        # Dataloader
+        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] = min(self.system_dict[&#34;params&#34;][&#34;batch_size&#34;], len(self.system_dict[&#34;local&#34;][&#34;dataset&#34;]))
+        self.system_dict[&#34;local&#34;][&#34;nw&#34;] = min([os.cpu_count(), self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] if self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] &gt; 1 else 0, 8])  
+        
+
+        self.system_dict[&#34;local&#34;][&#34;dataloader&#34;] = torch.utils.data.DataLoader(self.system_dict[&#34;local&#34;][&#34;dataset&#34;],
+                                                 batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;],
+                                                 num_workers=self.system_dict[&#34;local&#34;][&#34;nw&#34;],
+                                                 shuffle=not self.system_dict[&#34;params&#34;][&#34;rect&#34;], 
+                                                 pin_memory=True,
+                                                 collate_fn=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].collate_fn)
+
+
+
+        # Testloader
+        if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            self.system_dict[&#34;local&#34;][&#34;testloader&#34;] = torch.utils.data.DataLoader(LoadImagesAndLabels(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;], 
+                                                                                                        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;],
+                                                                                                        self.system_dict[&#34;params&#34;][&#34;img_size&#34;], 
+                                                                                                        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                                                                        hyp=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;],
+                                                                                                        rect=False,
+                                                                                                        cache_labels=True,
+                                                                                                        cache_images=self.system_dict[&#34;params&#34;][&#34;cache_images&#34;],
+                                                                                                        single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;]),
+                                                                                     batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                                                     num_workers=self.system_dict[&#34;local&#34;][&#34;nw&#34;],
+                                                                                     pin_memory=True,
+                                                                                     collate_fn=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].collate_fn)
+
+
+    def Train(self, num_epochs=2):
+        &#39;&#39;&#39;
+        User function: Set training params and train
+
+        Args:
+            num_epochs (int): Number of epochs in training
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;params&#34;][&#34;epochs&#34;] = num_epochs;
+
+        if not self.system_dict[&#34;params&#34;][&#34;evolve&#34;]:
+            self.setup();
+            self.start_training();
+        else:
+            if(not self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+                print(&#34;Validation data required for evolving hyper-parameters&#34;);
+            else:
+                for _ in range(self.system_dict[&#34;params&#34;][&#34;num_generations&#34;]):  # generations to evolve
+                    if os.path.exists(&#39;evolve.txt&#39;):  # if evolve.txt exists: select best hyps and mutate
+                        # Select parent(s)
+                        x = np.loadtxt(&#39;evolve.txt&#39;, ndmin=2)
+                        parent = &#39;single&#39;  # parent selection method: &#39;single&#39; or &#39;weighted&#39;
+                        if parent == &#39;single&#39; or len(x) == 1:
+                            x = x[fitness(x).argmax()]
+                        elif parent == &#39;weighted&#39;:  # weighted combination
+                            n = min(10, len(x))  # number to merge
+                            x = x[np.argsort(-fitness(x))][:n]  # top n mutations
+                            w = fitness(x) - fitness(x).min()  # weights
+                            x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
+
+                        # Mutate
+                        method = 3
+                        s = 0.3  # 20% sigma
+                        np.random.seed(int(time.time()))
+                        g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
+                        ng = len(g)
+                        if method == 1:
+                            v = (np.random.randn(ng) * np.random.random() * g * s + 1) ** 2.0
+                        elif method == 2:
+                            v = (np.random.randn(ng) * np.random.random(ng) * g * s + 1) ** 2.0
+                        elif method == 3:
+                            v = np.ones(ng)
+                            while all(v == 1):  # mutate until a change occurs (prevent duplicates)
+                                r = (np.random.random(ng) &lt; 0.1) * np.random.randn(ng)  # 10% mutation probability
+                                v = (g * s * r + 1) ** 2.0
+                        for i, k in enumerate(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;].keys()):  # plt.hist(v.ravel(), 300)
+                            self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k] = x[i + 7] * v[i]  # mutate
+
+                    # Clip to limits
+                    keys = [&#39;lr0&#39;, &#39;iou_t&#39;, &#39;momentum&#39;, &#39;weight_decay&#39;, &#39;hsv_s&#39;, &#39;hsv_v&#39;, &#39;translate&#39;, &#39;scale&#39;, &#39;fl_gamma&#39;]
+                    limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
+                    for k, v in zip(keys, limits):
+                        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k] = np.clip(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k], v[0], v[1])
+
+                    # Train mutation
+                    self.setup();
+                    results = self.start_training();
+                    self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = self.system_dict[&#34;params&#34;][&#34;img_size_selected&#34;];
+
+                    # Write mutation results
+                    print_mutation(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;], results, self.system_dict[&#34;params&#34;][&#34;bucket&#34;])
+
+                    # Plot results
+                    plot_evolution_results(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;])
+
+
+
+
+
+
+
+    def start_training(self):
+        &#39;&#39;&#39;
+        Internal function: Start training post setting up all params
+
+        Args:
+            None
+
+        Returns:
+            str: Training and validation epoch results
+        &#39;&#39;&#39;
+        self.system_dict[&#34;local&#34;][&#34;nb&#34;] = len(self.system_dict[&#34;local&#34;][&#34;dataloader&#34;])
+        prebias = self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] == 0
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].nc = self.system_dict[&#34;local&#34;][&#34;nc&#34;]  # attach number of classes to model
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].arc = self.system_dict[&#34;params&#34;][&#34;arc&#34;]  # attach yolo architecture
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].hyp = self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;]  # attach hyperparameters to model
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].class_weights = labels_to_class_weights(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].labels, 
+                                                                self.system_dict[&#34;local&#34;][&#34;nc&#34;]).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])  # attach class weights
+        maps = np.zeros(self.system_dict[&#34;local&#34;][&#34;nc&#34;])  # mAP per class
+        # torch.autograd.set_detect_anomaly(True)
+        results = (0, 0, 0, 0, 0, 0, 0)  # &#39;P&#39;, &#39;R&#39;, &#39;mAP&#39;, &#39;F1&#39;, &#39;val GIoU&#39;, &#39;val Objectness&#39;, &#39;val Classification&#39;
+        t0 = time.time()
+        torch_utils.model_info(self.system_dict[&#34;local&#34;][&#34;model&#34;], report=&#39;summary&#39;)  # &#39;full&#39; or &#39;summary&#39;
+        print(&#39;Using %g dataloader workers&#39; % self.system_dict[&#34;local&#34;][&#34;nw&#34;])
+        print(&#39;Starting training for %g epochs...&#39; % self.system_dict[&#34;params&#34;][&#34;epochs&#34;])
+
+
+        for epoch in range(self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;], self.system_dict[&#34;params&#34;][&#34;epochs&#34;]):  # epoch ------------------------------
+            self.system_dict[&#34;local&#34;][&#34;model&#34;].train()
+
+            # Prebias
+            if prebias:
+                if epoch &lt; 3:  # prebias
+                    ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
+                else:  # normal training
+                    ps = self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;], self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;momentum&#39;]  # normal training settings
+                    print_model_biases(self.system_dict[&#34;local&#34;][&#34;model&#34;])
+                    prebias = False
+
+                # Bias optimizer settings
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2][&#39;lr&#39;] = ps[0]
+                if self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2].get(&#39;momentum&#39;) is not None:  # for SGD but not Adam
+                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2][&#39;momentum&#39;] = ps[1]
+
+            # Update image weights (optional)
+            if self.system_dict[&#34;local&#34;][&#34;dataset&#34;].image_weights:
+                print(&#34;in here&#34;)
+                w = self.system_dict[&#34;local&#34;][&#34;model&#34;].class_weights.cpu().numpy() * (1 - maps) ** 2  # class weights
+                image_weights = labels_to_image_weights(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].labels, 
+                                                        nc=self.system_dict[&#34;local&#34;][&#34;nc&#34;], 
+                                                        class_weights=w)
+                self.system_dict[&#34;local&#34;][&#34;dataset&#34;].indices = random.choices(range(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].n), 
+                                                    weights=image_weights, k=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].n)  # rand weighted idx
+
+            mloss = torch.zeros(4).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])  # mean losses
+            print((&#39;\n&#39; + &#39;%10s&#39; * 8) % (&#39;Epoch&#39;, &#39;gpu_mem&#39;, &#39;GIoU&#39;, &#39;obj&#39;, &#39;cls&#39;, &#39;total&#39;, &#39;targets&#39;, &#39;img_size&#39;))
+            pbar = tqdm(enumerate(self.system_dict[&#34;local&#34;][&#34;dataloader&#34;]), total=self.system_dict[&#34;local&#34;][&#34;nb&#34;])  # progress bar
+
+            for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
+
+                
+                ni = i + self.system_dict[&#34;local&#34;][&#34;nb&#34;] * epoch  # number integrated batches (since train start)
+                imgs = imgs.to(self.system_dict[&#34;local&#34;][&#34;device&#34;]).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
+                targets = targets.to(self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+                # Multi-Scale training
+                if self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;]:
+                    if ni / self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                        self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = random.randrange(self.system_dict[&#34;params&#34;][&#34;img_sz_min&#34;], self.system_dict[&#34;params&#34;][&#34;img_sz_max&#34;] + 1) * 32
+                    sf = self.system_dict[&#34;params&#34;][&#34;img_size&#34;] / max(imgs.shape[2:])  # scale factor
+                    if sf != 1:
+                        ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
+                        imgs = F.interpolate(imgs, size=ns, mode=&#39;bilinear&#39;, align_corners=False)
+
+                # Plot images with bounding boxes
+                if ni == 0:
+                    fname = &#39;train_batch%g.png&#39; % i
+                    plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
+                    if self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;]:
+                        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;].add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats=&#39;HWC&#39;)
+
+                # Run model
+                pred = self.system_dict[&#34;local&#34;][&#34;model&#34;](imgs)
+
+                # Compute loss
+                loss, loss_items = compute_loss(pred, targets, self.system_dict[&#34;local&#34;][&#34;model&#34;], not prebias)
+                if not torch.isfinite(loss):
+                    print(&#39;WARNING: non-finite loss, ending training &#39;, loss_items)
+                    return results
+
+                # Scale loss by nominal batch_size of 64
+                loss *= self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] / 64
+
+                # Compute gradient
+                if self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;]:
+                    with amp.scale_loss(loss, self.system_dict[&#34;local&#34;][&#34;optimizer&#34;]) as scaled_loss:
+                        scaled_loss.backward()
+                else:
+                    loss.backward()
+
+                # Accumulate gradient for x batches before optimizing
+                if ni % self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] == 0:
+                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].step()
+                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].zero_grad()
+
+                # Print batch results
+                mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
+                mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0  # (GB)
+                s = (&#39;%10s&#39; * 2 + &#39;%10.3g&#39; * 6) % (
+                    &#39;%g/%g&#39; % (epoch, self.system_dict[&#34;params&#34;][&#34;epochs&#34;] - 1), &#39;%.3gG&#39; % mem, *mloss, len(targets), self.system_dict[&#34;params&#34;][&#34;img_size&#34;])
+                pbar.set_description(s)
+
+                # end batch ------------------------------------------------------------------------------------------------
+
+            # Process epoch results
+            final_epoch = epoch + 1 == self.system_dict[&#34;params&#34;][&#34;epochs&#34;]
+
+
+            if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+                if not self.system_dict[&#34;params&#34;][&#34;notest&#34;] or final_epoch:  # Calculate mAP
+                    is_coco = False
+                    results, maps = validate(self.system_dict[&#34;params&#34;][&#34;cfg&#34;],
+                                                self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;],
+                                                self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;],
+                                                self.system_dict[&#34;local&#34;][&#34;classes&#34;],
+                                                batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                img_size=self.system_dict[&#34;params&#34;][&#34;img_size_test&#34;],
+                                                model=self.system_dict[&#34;local&#34;][&#34;model&#34;],
+                                                conf_thres=0.001 if final_epoch and is_coco else 0.1,  # 0.1 for speed
+                                                iou_thres=0.6,
+                                                save_json=final_epoch and is_coco,
+                                                single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;],
+                                                dataloader=self.system_dict[&#34;local&#34;][&#34;testloader&#34;])
+
+            # Update scheduler
+            self.system_dict[&#34;local&#34;][&#34;scheduler&#34;].step()
+
+
+            if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+                # Write epoch results
+                with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;a&#39;) as f:
+                    f.write(s + &#39;%10.3g&#39; * 7 % results + &#39;\n&#39;)  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
+                if len(self.system_dict[&#34;params&#34;][&#34;name&#34;]) and self.system_dict[&#34;params&#34;][&#34;bucket&#34;]:
+                    os.system(&#39;gsutil cp results.txt gs://%s/results%s.txt&#39; % (self.system_dict[&#34;params&#34;][&#34;bucket&#34;], 
+                                                                                self.system_dict[&#34;params&#34;][&#34;name&#34;]))
+
+                # Write Tensorboard results
+                if self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;]:
+                    x = list(mloss) + list(results)
+                    titles = [&#39;GIoU&#39;, &#39;Objectness&#39;, &#39;Classification&#39;, &#39;Train loss&#39;,
+                              &#39;Precision&#39;, &#39;Recall&#39;, &#39;mAP&#39;, &#39;F1&#39;, &#39;val GIoU&#39;, &#39;val Objectness&#39;, &#39;val Classification&#39;]
+                    for xi, title in zip(x, titles):
+                        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;].add_scalar(title, xi, epoch)
+
+                # Update best mAP
+                fitness = sum(results[4:])  # total loss
+                if fitness &lt; self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;]:
+                    self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = fitness
+
+
+                # Save training results
+                save = (not self.system_dict[&#34;params&#34;][&#34;nosave&#34;]) or (final_epoch and not self.system_dict[&#34;params&#34;][&#34;evolve&#34;])
+                if save:
+                    with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;r&#39;) as f:
+                        # Create checkpoint
+                        chkpt = {&#39;epoch&#39;: epoch,
+                                 &#39;best_fitness&#39;: self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;],
+                                 &#39;training_results&#39;: f.read(),
+                                 &#39;model&#39;: self.system_dict[&#34;local&#34;][&#34;model&#34;].module.state_dict() if type(
+                                      self.system_dict[&#34;local&#34;][&#34;model&#34;]) is nn.parallel.DistributedDataParallel else  self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict(),
+                                 &#39;optimizer&#39;: None if final_epoch else  self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].state_dict()}
+
+                    # Save last checkpoint
+                    torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;])
+
+                    # Save best checkpoint
+                    if self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] == fitness:
+                        torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;best&#34;])
+
+                    # Save backup every 1 epochs (optional)
+                    if epoch &gt; 0 and epoch % 1 == 0:
+                        torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;backup%g.pt&#39; % epoch)
+
+                    # Delete checkpoint
+                    del chkpt
+
+            else:
+                chkpt = {&#39;epoch&#39;: epoch,
+                                 &#39;best_fitness&#39;: 0.0,
+                                 &#39;training_results&#39;: &#34;&#34;,
+                                 &#39;model&#39;: self.system_dict[&#34;local&#34;][&#34;model&#34;].module.state_dict() if type(
+                                      self.system_dict[&#34;local&#34;][&#34;model&#34;]) is nn.parallel.DistributedDataParallel else  self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict(),
+                                 &#39;optimizer&#39;: None if final_epoch else  self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].state_dict()}
+
+                # Save last checkpoint
+                torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;])
+
+
+                # Save backup every 1 epochs (optional)
+                if epoch &gt; 0 and epoch % 1 == 0:
+                    torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;backup%g.pt&#39; % epoch)
+
+                # Delete checkpoint
+                del chkpt
+
+
+        # end training
+        if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            n = self.system_dict[&#34;params&#34;][&#34;name&#34;]
+            if len(n):
+                n = &#39;_&#39; + n if not n.isnumeric() else n
+                fresults, flast, fbest = &#39;results%s.txt&#39; % n, &#39;last%s.pt&#39; % n, &#39;best%s.pt&#39; % n
+                os.rename(&#39;results.txt&#39;, fresults)
+                os.rename(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;, 
+                    self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + flast) if os.path.exists(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;) else None
+                os.rename(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;, 
+                    self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + fbest) if os.path.exists(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;) else None
+
+                # save to cloud
+                if self.system_dict[&#34;params&#34;][&#34;bucket&#34;]:
+                    os.system(&#39;gsutil cp %s %s gs://%s&#39; % (fresults, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + flast, 
+                        self.system_dict[&#34;params&#34;][&#34;bucket&#34;]))
+
+            if not self.system_dict[&#34;params&#34;][&#34;evolve&#34;]:
+                plot_results()  # save as results.png
+            print(&#39;%g epochs completed in %.3f hours.\n&#39; % (epoch - self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] + 1, (time.time() - t0) / 3600))
+            dist.destroy_process_group() if torch.cuda.device_count() &gt; 1 else None
+            torch.cuda.empty_cache()
+
+            return results
+
+                </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="7_yolov3.lib.train_detector.isnotebook"><code class="name flex">
+<span>def <span class="ident">isnotebook</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def isnotebook():
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == &#39;ZMQInteractiveShell&#39;:
+            return True   # Jupyter notebook or qtconsole
+        elif shell == &#39;TerminalInteractiveShell&#39;:
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="7_yolov3.lib.train_detector.Detector"><code class="flex name class">
+<span>class <span class="ident">Detector</span></span>
+<span>(</span><span>verbose=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class to train a detector</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>int</code></dt>
+<dd>Set verbosity levels
+0 - Print Nothing
+1 - Print desired details</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Detector():
+    &#39;&#39;&#39;
+    Class to train a detector
+
+    Args:
+        verbose (int): Set verbosity levels
+                        0 - Print Nothing
+                        1 - Print desired details
+    &#39;&#39;&#39;
+    def __init__(self, verbose=1):
+        self.system_dict = {};
+        self.system_dict[&#34;verbose&#34;] = verbose;
+        self.system_dict[&#34;local&#34;] = {};
+        self.system_dict[&#34;fixed_params&#34;] = {};
+        self.system_dict[&#34;dataset&#34;] = {};
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;] = {};
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;] = {};
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;] = False;
+        self.system_dict[&#34;params&#34;] = {};
+
+        self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = True
+        try:  # Mixed precision training https://github.com/NVIDIA/apex
+            from apex import amp
+        except:
+            self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = False  # not installed
+
+
+        self.set_fixed_params();
+
+
+    def set_fixed_params(self):
+        &#39;&#39;&#39;
+        Internal function: Set fixed parameters
+
+        Args:
+            None
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] = &#39;weights&#39; + os.sep  
+        self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;] = self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;
+        self.system_dict[&#34;fixed_params&#34;][&#34;best&#34;] = self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;
+        self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;] = &#39;results.txt&#39;
+
+        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;] = {&#39;giou&#39;: 3.54,  # giou loss gain
+                                                   &#39;cls&#39;: 37.4,  # cls loss gain
+                                                   &#39;cls_pw&#39;: 1.0,  # cls BCELoss positive_weight
+                                                   &#39;obj&#39;: 49.5,  # obj loss gain (*=img_size/320 if img_size != 320)
+                                                   &#39;obj_pw&#39;: 1.0,  # obj BCELoss positive_weight
+                                                   &#39;iou_t&#39;: 0.225,  # iou training threshold
+                                                   &#39;lr0&#39;: 0.00579,  # initial learning rate (SGD=5E-3, Adam=5E-4)
+                                                   &#39;lrf&#39;: -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
+                                                   &#39;momentum&#39;: 0.937,  # SGD momentum
+                                                   &#39;weight_decay&#39;: 0.000484,  # optimizer weight decay
+                                                   &#39;fl_gamma&#39;: 0.5,  # focal loss gamma
+                                                   &#39;hsv_h&#39;: 0.0138,  # image HSV-Hue augmentation (fraction)
+                                                   &#39;hsv_s&#39;: 0.678,  # image HSV-Saturation augmentation (fraction)
+                                                   &#39;hsv_v&#39;: 0.36,  # image HSV-Value augmentation (fraction)
+                                                   &#39;degrees&#39;: 1.98,  # image rotation (+/- deg)
+                                                   &#39;translate&#39;: 0.05,  # image translation (+/- fraction)
+                                                   &#39;scale&#39;: 0.05,  # image scale (+/- gain)
+                                                   &#39;shear&#39;: 0.641}  # image shear (+/- deg)
+
+        # Overwrite hyp with hyp*.txt (optional)
+        f = glob.glob(&#39;hyp*.txt&#39;)
+        if f:
+            print(&#39;Using %s&#39; % f[0])
+            for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
+                hyp[k] = v
+
+
+    def set_train_dataset(self, img_dir, label_dir, class_list, batch_size=2, img_size=416, cache_images=False):
+        &#39;&#39;&#39;
+        User function: Set training dataset parameters
+
+        Dataset Directory Structure
+
+                    root_dir
+                      |
+                      |-----------images (img_dir)
+                      |              |
+                      |              |------------------img1.jpg
+                      |              |------------------img2.jpg
+                      |              |------------------.........(and so on)
+                      |
+                      |-----------labels (label_dir)
+                      |              |
+                      |              |------------------img1.txt
+                      |              |------------------img2.txt
+                      |              |------------------.........(and so on)
+                      |
+                      |------------classes.txt 
+                      
+
+            Classes file
+             
+                 List of classes in every new line.
+                 The order corresponds to the IDs in annotation files
+                 
+                 Eg.
+                      class1               (------------------------------&gt; if will be 0)
+                      class2               (------------------------------&gt; if will be 1)
+                      class3               (------------------------------&gt; if will be 2)
+                      class4               (------------------------------&gt; if will be 3)
+                      
+
+            Annotation file format
+
+                CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+                
+                (All the coordinates should be normalized)
+                (X coordinates divided by width of image, Y coordinates divided by height of image)
+                
+                Ex. (One line per bounding box of object in image)
+                    class_id x1 y1 w h
+                    class_id x1 y1 w h
+                    ..... (and so on)
+        
+
+        Args:
+            img_dir (str): Relative path to folder containing all training images
+            label_dir (str): Relative path to folder containing all training labels text files
+            class_list (list): List of all classes in dataset
+            batch_size (int): Mini batch sampling size for training epochs
+            cache_images (bool): If True, images are cached for faster loading
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;img_dir&#34;] = img_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;label_dir&#34;] = label_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;class_list&#34;] = class_list;
+        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] = batch_size;
+        self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] = batch_size;
+        self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = [img_size];
+        self.system_dict[&#34;params&#34;][&#34;img_size_selected&#34;] = [img_size];
+        self.system_dict[&#34;params&#34;][&#34;cache_images&#34;] = cache_images;
+
+
+    def set_val_dataset(self, img_dir, label_dir):
+        &#39;&#39;&#39;
+        User function: Set training dataset parameters
+
+        Dataset Directory Structure
+
+                    root_dir
+                      |
+                      |-----------images (img_dir)
+                      |              |
+                      |              |------------------img1.jpg
+                      |              |------------------img2.jpg
+                      |              |------------------.........(and so on)
+                      |
+                      |-----------labels (label_dir)
+                      |              |
+                      |              |------------------img1.txt
+                      |              |------------------img2.txt
+                      |              |------------------.........(and so on)
+                      |
+                      |------------classes.txt 
+                      
+
+            Classes file
+             
+                 List of classes in every new line.
+                 The order corresponds to the IDs in annotation files
+                 
+                 Eg.
+                      class1               (------------------------------&gt; if will be 0)
+                      class2               (------------------------------&gt; if will be 1)
+                      class3               (------------------------------&gt; if will be 2)
+                      class4               (------------------------------&gt; if will be 3)
+                      
+
+            Annotation file format
+
+                CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+                
+                (All the coordinates should be normalized)
+                (X coordinates divided by width of image, Y coordinates divided by height of image)
+                
+                Ex. (One line per bounding box of object in image)
+                    class_id x1 y1 w h
+                    class_id x1 y1 w h
+                    ..... (and so on)
+        
+
+        Args:
+            img_dir (str): Relative path to folder containing all validation images
+            label_dir (str): Relative path to folder containing all validation labels text files
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;] = img_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;] = label_dir;
+        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;] = True;
+
+
+
+    def set_model(self, model_name=&#34;yolov3&#34;):
+        &#39;&#39;&#39;
+        User function: Set Model parameters
+
+            Available Models
+                yolov3
+                yolov3s
+                yolov3-spp
+                yolov3-spp3
+                yolov3-tiny
+                yolov3-spp-matrix
+                csresnext50-panet-spp
+
+
+        Args:
+            model_name (str): Select model from available models
+            gpu_devices (list): List of GPU Device IDs to be used in training
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        tmp_cfg = os.path.dirname(os.path.realpath(__file__)) + &#34;/cfg/&#34; + model_name + &#34;.cfg&#34;;
+        cmd = &#34;cp &#34; + tmp_cfg + &#34; &#34; + os.getcwd() + &#34;/&#34; + model_name + &#34;.cfg&#34;;
+        os.system(cmd);
+        self.system_dict[&#34;params&#34;][&#34;cfg&#34;] = model_name + &#34;.cfg&#34;;
+
+
+
+    def set_hyperparams(self, optimizer=&#34;sgd&#34;, lr=0.00579, multi_scale=False, evolve=False, num_generations=2, 
+                        mixed_precision=True, gpu_devices=&#34;0&#34;):
+        &#39;&#39;&#39;
+        User function: Set hyper parameters
+            Available optimizers
+                sgd
+                adam
+
+        Args:
+            optimizer (str): Select the right optimizer
+            lr (float): Initial learning rate for training
+            multi_scale (bool): If True, run multi-scale training.
+            evolve (bool): If True, runs multiple epochs in every generation and updates hyper-params accordingly
+            mixed_precision (bool): If True, uses both 16-bit and 32-bit floating-point types in a model during training to make it run faster and use less memory.
+            gpu_devices (str): List of all GPU device IDs separated by a comma in a string
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;] = multi_scale;
+        if(optimizer == &#34;sgd&#34;):
+            self.system_dict[&#34;params&#34;][&#34;adam&#34;] = False;
+        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#34;lr0&#34;] = lr;
+        self.system_dict[&#34;params&#34;][&#34;rect&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;resume&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;nosave&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;notest&#34;] = False;
+        self.system_dict[&#34;params&#34;][&#34;evolve&#34;] = evolve;
+        self.system_dict[&#34;params&#34;][&#34;num_generations&#34;] = num_generations;
+        self.system_dict[&#34;params&#34;][&#34;bucket&#34;] = &#34;&#34;;
+        self.system_dict[&#34;params&#34;][&#34;weights&#34;] = &#34;&#34;;
+        self.system_dict[&#34;params&#34;][&#34;arc&#34;] = &#34;default&#34;;
+        self.system_dict[&#34;params&#34;][&#34;name&#34;] = &#34;&#34;;
+        self.system_dict[&#34;params&#34;][&#34;device&#34;] = gpu_devices;
+        self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = mixed_precision;
+
+
+    def setup(self):
+        &#39;&#39;&#39;
+        Internal function: Setup all the dataset, model and data params 
+
+        Args:
+            None
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        if(not os.path.isdir(&#34;weights&#34;)):
+            os.mkdir(&#34;weights&#34;);
+
+
+        #Device Setup
+        self.system_dict[&#34;params&#34;][&#34;weights&#34;] = last if self.system_dict[&#34;params&#34;][&#34;resume&#34;] else self.system_dict[&#34;params&#34;][&#34;weights&#34;]
+        self.system_dict[&#34;local&#34;][&#34;device&#34;] = torch_utils.select_device(self.system_dict[&#34;params&#34;][&#34;device&#34;], 
+                                                                        apex=self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;], 
+                                                                        batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;])
+        if self.system_dict[&#34;local&#34;][&#34;device&#34;].type == &#39;cpu&#39;:
+            self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = False
+
+        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;] = None
+        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;] = SummaryWriter()
+
+
+        #Data Setup
+        img_size, img_size_test = self.system_dict[&#34;params&#34;][&#34;img_size&#34;] if len(self.system_dict[&#34;params&#34;][&#34;img_size&#34;]) == 2 else self.system_dict[&#34;params&#34;][&#34;img_size&#34;] * 2 
+
+        init_seeds()
+        if self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;]:
+            img_sz_min = round(img_size / 32 / 1.5)
+            img_sz_max = round(img_size / 32 * 1.5)
+            img_size = img_sz_max * 32  # initiate with maximum multi_scale size
+            print(&#39;Using multi-scale %g - %g&#39; % (img_sz_min * 32, img_size))
+
+            self.system_dict[&#34;params&#34;][&#34;img_sz_min&#34;] = img_sz_min;
+            self.system_dict[&#34;params&#34;][&#34;img_sz_max&#34;] = img_sz_max;
+
+        self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = img_size;
+        self.system_dict[&#34;params&#34;][&#34;img_size_test&#34;] = img_size_test;
+
+        f = open(self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;class_list&#34;], &#39;r&#39;);
+        lines = f.readlines();
+        f.close();
+
+        self.system_dict[&#34;local&#34;][&#34;classes&#34;] = [];
+        for i in range(len(lines)):
+            if(lines[i] != &#34;&#34; and lines[i] != &#34;\n&#34; ):
+                self.system_dict[&#34;local&#34;][&#34;classes&#34;].append(lines[i]);
+        self.system_dict[&#34;local&#34;][&#34;num_classes&#34;] = int(len(self.system_dict[&#34;local&#34;][&#34;classes&#34;]));
+        if(self.system_dict[&#34;local&#34;][&#34;num_classes&#34;] == 1):
+            self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] = True;
+        else:
+            self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] = False;
+
+
+        self.system_dict[&#34;local&#34;][&#34;nc&#34;] = 1 if self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] else self.system_dict[&#34;local&#34;][&#34;num_classes&#34;]
+
+        # Remove previous results
+        for f in glob.glob(&#39;*_batch*.png&#39;) + glob.glob(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;]):
+            os.remove(f)
+
+        if &#39;pw&#39; not in self.system_dict[&#34;params&#34;][&#34;arc&#34;]:  # remove BCELoss positive weights
+            self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;cls_pw&#39;] = 1.
+            self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;obj_pw&#39;] = 1.
+        
+
+
+        #Update Config file
+        update(self.system_dict[&#34;params&#34;][&#34;cfg&#34;], self.system_dict[&#34;local&#34;][&#34;num_classes&#34;]);
+
+        #Model
+        self.system_dict[&#34;local&#34;][&#34;model&#34;] = Darknet(self.system_dict[&#34;params&#34;][&#34;cfg&#34;], 
+                                            arc=self.system_dict[&#34;params&#34;][&#34;arc&#34;]).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+        attempt_download(self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+
+        # Optimizer
+        pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
+        for k, v in dict(self.system_dict[&#34;local&#34;][&#34;model&#34;].named_parameters()).items():
+            if &#39;.bias&#39; in k:
+                pg2 += [v]  # biases
+            elif &#39;Conv2d.weight&#39; in k:
+                pg1 += [v]  # apply weight_decay
+            else:
+                pg0 += [v]  # all else
+
+        if self.system_dict[&#34;params&#34;][&#34;adam&#34;]:
+            # hyp[&#39;lr0&#39;] *= 0.1  # reduce lr (i.e. SGD=5E-3, Adam=5E-4)
+            self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = optim.Adam(pg0, lr=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;])
+            # optimizer = AdaBound(pg0, lr=hyp[&#39;lr0&#39;], final_lr=0.1)
+        else:
+            self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = optim.SGD(pg0, lr=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;], 
+                                                                    momentum=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;momentum&#39;], nesterov=True)
+
+        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].add_param_group({&#39;params&#39;: pg1, &#39;weight_decay&#39;: self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;weight_decay&#39;]})  # add pg1 with weight_decay
+        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].add_param_group({&#39;params&#39;: pg2})  # add pg2 (biases)
+        del pg0, pg1, pg2
+
+
+        self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] = 0
+        self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = float(&#39;inf&#39;)
+
+        if self.system_dict[&#34;params&#34;][&#34;weights&#34;].endswith(&#39;.pt&#39;):  
+            chkpt = torch.load(self.system_dict[&#34;params&#34;][&#34;weights&#34;], map_location=self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+            # load model
+            try:
+                chkpt[&#39;model&#39;] = {k: v for k, v in chkpt[&#39;model&#39;].items() if self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict()[k].numel() == v.numel()}
+                self.system_dict[&#34;local&#34;][&#34;model&#34;].load_state_dict(chkpt[&#39;model&#39;], strict=False)
+            except KeyError as e:
+                s = &#34;%s is not compatible with %s. Specify --weights &#39;&#39; or specify a --cfg compatible with %s. &#34; \
+                    &#34;See https://github.com/ultralytics/yolov3/issues/657&#34; % (self.system_dict[&#34;params&#34;][&#34;weights&#34;], self.system_dict[&#34;params&#34;][&#34;cfg&#34;], 
+                                                                              self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+                raise KeyError(s) from e
+
+            # load optimizer
+            if chkpt[&#39;optimizer&#39;] is not None:
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].load_state_dict(chkpt[&#39;optimizer&#39;])
+                self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = chkpt[&#39;best_fitness&#39;]
+
+            # load results
+            if chkpt.get(&#39;training_results&#39;) is not None:
+                with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;w&#39;) as file:
+                    file.write(chkpt[&#39;training_results&#39;])
+
+            self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] = chkpt[&#39;epoch&#39;] + 1
+            del chkpt
+
+        elif len(self.system_dict[&#34;params&#34;][&#34;weights&#34;]) &gt; 0:  # darknet format
+            # possible weights are &#39;*.weights&#39;, &#39;yolov3-tiny.conv.15&#39;,  &#39;darknet53.conv.74&#39; etc.
+            load_darknet_weights(self.system_dict[&#34;local&#34;][&#34;model&#34;], self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+
+
+        #Scheduler
+        self.system_dict[&#34;local&#34;][&#34;scheduler&#34;] = lr_scheduler.MultiStepLR(self.system_dict[&#34;local&#34;][&#34;optimizer&#34;], 
+                                                    milestones=[round(self.system_dict[&#34;params&#34;][&#34;epochs&#34;] * x) for x in [0.8, 0.9]], gamma=0.1)
+        self.system_dict[&#34;local&#34;][&#34;scheduler&#34;].last_epoch = self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] - 1
+
+
+        if self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;]:
+            self.system_dict[&#34;local&#34;][&#34;model&#34;], self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = amp.initialize(self.system_dict[&#34;local&#34;][&#34;model&#34;], 
+                                                                                                        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;], 
+                                                                                                        opt_level=&#39;O1&#39;, verbosity=0)
+            
+            
+        # Initialize distributed training
+        if self.system_dict[&#34;local&#34;][&#34;device&#34;].type != &#39;cpu&#39; and torch.cuda.device_count() &gt; 1:
+            dist.init_process_group(backend=&#39;nccl&#39;, 
+                                    init_method=&#39;tcp://127.0.0.1:9999&#39;,  
+                                    world_size=1,  
+                                    rank=0)  
+            self.system_dict[&#34;local&#34;][&#34;model&#34;] = torch.nn.parallel.DistributedDataParallel(self.system_dict[&#34;local&#34;][&#34;model&#34;], 
+                                                                                            find_unused_parameters=True)
+            self.system_dict[&#34;local&#34;][&#34;model&#34;].yolo_layers = self.system_dict[&#34;local&#34;][&#34;model&#34;].module.yolo_layers 
+
+
+
+        # Dataset
+        self.system_dict[&#34;local&#34;][&#34;dataset&#34;] = LoadImagesAndLabels(self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;img_dir&#34;], 
+                                        self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;label_dir&#34;],
+                                        self.system_dict[&#34;params&#34;][&#34;img_size&#34;], 
+                                        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;],
+                                        augment=True,
+                                        hyp=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;], 
+                                        rect=self.system_dict[&#34;params&#34;][&#34;rect&#34;],  
+                                        cache_labels=True,
+                                        cache_images=self.system_dict[&#34;params&#34;][&#34;cache_images&#34;],
+                                        single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;])
+        
+        # Dataloader
+        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] = min(self.system_dict[&#34;params&#34;][&#34;batch_size&#34;], len(self.system_dict[&#34;local&#34;][&#34;dataset&#34;]))
+        self.system_dict[&#34;local&#34;][&#34;nw&#34;] = min([os.cpu_count(), self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] if self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] &gt; 1 else 0, 8])  
+        
+
+        self.system_dict[&#34;local&#34;][&#34;dataloader&#34;] = torch.utils.data.DataLoader(self.system_dict[&#34;local&#34;][&#34;dataset&#34;],
+                                                 batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;],
+                                                 num_workers=self.system_dict[&#34;local&#34;][&#34;nw&#34;],
+                                                 shuffle=not self.system_dict[&#34;params&#34;][&#34;rect&#34;], 
+                                                 pin_memory=True,
+                                                 collate_fn=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].collate_fn)
+
+
+
+        # Testloader
+        if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            self.system_dict[&#34;local&#34;][&#34;testloader&#34;] = torch.utils.data.DataLoader(LoadImagesAndLabels(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;], 
+                                                                                                        self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;],
+                                                                                                        self.system_dict[&#34;params&#34;][&#34;img_size&#34;], 
+                                                                                                        self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                                                                        hyp=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;],
+                                                                                                        rect=False,
+                                                                                                        cache_labels=True,
+                                                                                                        cache_images=self.system_dict[&#34;params&#34;][&#34;cache_images&#34;],
+                                                                                                        single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;]),
+                                                                                     batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                                                     num_workers=self.system_dict[&#34;local&#34;][&#34;nw&#34;],
+                                                                                     pin_memory=True,
+                                                                                     collate_fn=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].collate_fn)
+
+
+    def Train(self, num_epochs=2):
+        &#39;&#39;&#39;
+        User function: Set training params and train
+
+        Args:
+            num_epochs (int): Number of epochs in training
+
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.system_dict[&#34;params&#34;][&#34;epochs&#34;] = num_epochs;
+
+        if not self.system_dict[&#34;params&#34;][&#34;evolve&#34;]:
+            self.setup();
+            self.start_training();
+        else:
+            if(not self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+                print(&#34;Validation data required for evolving hyper-parameters&#34;);
+            else:
+                for _ in range(self.system_dict[&#34;params&#34;][&#34;num_generations&#34;]):  # generations to evolve
+                    if os.path.exists(&#39;evolve.txt&#39;):  # if evolve.txt exists: select best hyps and mutate
+                        # Select parent(s)
+                        x = np.loadtxt(&#39;evolve.txt&#39;, ndmin=2)
+                        parent = &#39;single&#39;  # parent selection method: &#39;single&#39; or &#39;weighted&#39;
+                        if parent == &#39;single&#39; or len(x) == 1:
+                            x = x[fitness(x).argmax()]
+                        elif parent == &#39;weighted&#39;:  # weighted combination
+                            n = min(10, len(x))  # number to merge
+                            x = x[np.argsort(-fitness(x))][:n]  # top n mutations
+                            w = fitness(x) - fitness(x).min()  # weights
+                            x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
+
+                        # Mutate
+                        method = 3
+                        s = 0.3  # 20% sigma
+                        np.random.seed(int(time.time()))
+                        g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
+                        ng = len(g)
+                        if method == 1:
+                            v = (np.random.randn(ng) * np.random.random() * g * s + 1) ** 2.0
+                        elif method == 2:
+                            v = (np.random.randn(ng) * np.random.random(ng) * g * s + 1) ** 2.0
+                        elif method == 3:
+                            v = np.ones(ng)
+                            while all(v == 1):  # mutate until a change occurs (prevent duplicates)
+                                r = (np.random.random(ng) &lt; 0.1) * np.random.randn(ng)  # 10% mutation probability
+                                v = (g * s * r + 1) ** 2.0
+                        for i, k in enumerate(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;].keys()):  # plt.hist(v.ravel(), 300)
+                            self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k] = x[i + 7] * v[i]  # mutate
+
+                    # Clip to limits
+                    keys = [&#39;lr0&#39;, &#39;iou_t&#39;, &#39;momentum&#39;, &#39;weight_decay&#39;, &#39;hsv_s&#39;, &#39;hsv_v&#39;, &#39;translate&#39;, &#39;scale&#39;, &#39;fl_gamma&#39;]
+                    limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
+                    for k, v in zip(keys, limits):
+                        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k] = np.clip(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k], v[0], v[1])
+
+                    # Train mutation
+                    self.setup();
+                    results = self.start_training();
+                    self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = self.system_dict[&#34;params&#34;][&#34;img_size_selected&#34;];
+
+                    # Write mutation results
+                    print_mutation(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;], results, self.system_dict[&#34;params&#34;][&#34;bucket&#34;])
+
+                    # Plot results
+                    plot_evolution_results(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;])
+
+
+
+
+
+
+
+    def start_training(self):
+        &#39;&#39;&#39;
+        Internal function: Start training post setting up all params
+
+        Args:
+            None
+
+        Returns:
+            str: Training and validation epoch results
+        &#39;&#39;&#39;
+        self.system_dict[&#34;local&#34;][&#34;nb&#34;] = len(self.system_dict[&#34;local&#34;][&#34;dataloader&#34;])
+        prebias = self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] == 0
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].nc = self.system_dict[&#34;local&#34;][&#34;nc&#34;]  # attach number of classes to model
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].arc = self.system_dict[&#34;params&#34;][&#34;arc&#34;]  # attach yolo architecture
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].hyp = self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;]  # attach hyperparameters to model
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].class_weights = labels_to_class_weights(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].labels, 
+                                                                self.system_dict[&#34;local&#34;][&#34;nc&#34;]).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])  # attach class weights
+        maps = np.zeros(self.system_dict[&#34;local&#34;][&#34;nc&#34;])  # mAP per class
+        # torch.autograd.set_detect_anomaly(True)
+        results = (0, 0, 0, 0, 0, 0, 0)  # &#39;P&#39;, &#39;R&#39;, &#39;mAP&#39;, &#39;F1&#39;, &#39;val GIoU&#39;, &#39;val Objectness&#39;, &#39;val Classification&#39;
+        t0 = time.time()
+        torch_utils.model_info(self.system_dict[&#34;local&#34;][&#34;model&#34;], report=&#39;summary&#39;)  # &#39;full&#39; or &#39;summary&#39;
+        print(&#39;Using %g dataloader workers&#39; % self.system_dict[&#34;local&#34;][&#34;nw&#34;])
+        print(&#39;Starting training for %g epochs...&#39; % self.system_dict[&#34;params&#34;][&#34;epochs&#34;])
+
+
+        for epoch in range(self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;], self.system_dict[&#34;params&#34;][&#34;epochs&#34;]):  # epoch ------------------------------
+            self.system_dict[&#34;local&#34;][&#34;model&#34;].train()
+
+            # Prebias
+            if prebias:
+                if epoch &lt; 3:  # prebias
+                    ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
+                else:  # normal training
+                    ps = self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;], self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;momentum&#39;]  # normal training settings
+                    print_model_biases(self.system_dict[&#34;local&#34;][&#34;model&#34;])
+                    prebias = False
+
+                # Bias optimizer settings
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2][&#39;lr&#39;] = ps[0]
+                if self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2].get(&#39;momentum&#39;) is not None:  # for SGD but not Adam
+                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2][&#39;momentum&#39;] = ps[1]
+
+            # Update image weights (optional)
+            if self.system_dict[&#34;local&#34;][&#34;dataset&#34;].image_weights:
+                print(&#34;in here&#34;)
+                w = self.system_dict[&#34;local&#34;][&#34;model&#34;].class_weights.cpu().numpy() * (1 - maps) ** 2  # class weights
+                image_weights = labels_to_image_weights(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].labels, 
+                                                        nc=self.system_dict[&#34;local&#34;][&#34;nc&#34;], 
+                                                        class_weights=w)
+                self.system_dict[&#34;local&#34;][&#34;dataset&#34;].indices = random.choices(range(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].n), 
+                                                    weights=image_weights, k=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].n)  # rand weighted idx
+
+            mloss = torch.zeros(4).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])  # mean losses
+            print((&#39;\n&#39; + &#39;%10s&#39; * 8) % (&#39;Epoch&#39;, &#39;gpu_mem&#39;, &#39;GIoU&#39;, &#39;obj&#39;, &#39;cls&#39;, &#39;total&#39;, &#39;targets&#39;, &#39;img_size&#39;))
+            pbar = tqdm(enumerate(self.system_dict[&#34;local&#34;][&#34;dataloader&#34;]), total=self.system_dict[&#34;local&#34;][&#34;nb&#34;])  # progress bar
+
+            for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
+
+                
+                ni = i + self.system_dict[&#34;local&#34;][&#34;nb&#34;] * epoch  # number integrated batches (since train start)
+                imgs = imgs.to(self.system_dict[&#34;local&#34;][&#34;device&#34;]).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
+                targets = targets.to(self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+                # Multi-Scale training
+                if self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;]:
+                    if ni / self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                        self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = random.randrange(self.system_dict[&#34;params&#34;][&#34;img_sz_min&#34;], self.system_dict[&#34;params&#34;][&#34;img_sz_max&#34;] + 1) * 32
+                    sf = self.system_dict[&#34;params&#34;][&#34;img_size&#34;] / max(imgs.shape[2:])  # scale factor
+                    if sf != 1:
+                        ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
+                        imgs = F.interpolate(imgs, size=ns, mode=&#39;bilinear&#39;, align_corners=False)
+
+                # Plot images with bounding boxes
+                if ni == 0:
+                    fname = &#39;train_batch%g.png&#39; % i
+                    plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
+                    if self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;]:
+                        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;].add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats=&#39;HWC&#39;)
+
+                # Run model
+                pred = self.system_dict[&#34;local&#34;][&#34;model&#34;](imgs)
+
+                # Compute loss
+                loss, loss_items = compute_loss(pred, targets, self.system_dict[&#34;local&#34;][&#34;model&#34;], not prebias)
+                if not torch.isfinite(loss):
+                    print(&#39;WARNING: non-finite loss, ending training &#39;, loss_items)
+                    return results
+
+                # Scale loss by nominal batch_size of 64
+                loss *= self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] / 64
+
+                # Compute gradient
+                if self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;]:
+                    with amp.scale_loss(loss, self.system_dict[&#34;local&#34;][&#34;optimizer&#34;]) as scaled_loss:
+                        scaled_loss.backward()
+                else:
+                    loss.backward()
+
+                # Accumulate gradient for x batches before optimizing
+                if ni % self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] == 0:
+                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].step()
+                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].zero_grad()
+
+                # Print batch results
+                mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
+                mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0  # (GB)
+                s = (&#39;%10s&#39; * 2 + &#39;%10.3g&#39; * 6) % (
+                    &#39;%g/%g&#39; % (epoch, self.system_dict[&#34;params&#34;][&#34;epochs&#34;] - 1), &#39;%.3gG&#39; % mem, *mloss, len(targets), self.system_dict[&#34;params&#34;][&#34;img_size&#34;])
+                pbar.set_description(s)
+
+                # end batch ------------------------------------------------------------------------------------------------
+
+            # Process epoch results
+            final_epoch = epoch + 1 == self.system_dict[&#34;params&#34;][&#34;epochs&#34;]
+
+
+            if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+                if not self.system_dict[&#34;params&#34;][&#34;notest&#34;] or final_epoch:  # Calculate mAP
+                    is_coco = False
+                    results, maps = validate(self.system_dict[&#34;params&#34;][&#34;cfg&#34;],
+                                                self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;],
+                                                self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;],
+                                                self.system_dict[&#34;local&#34;][&#34;classes&#34;],
+                                                batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                img_size=self.system_dict[&#34;params&#34;][&#34;img_size_test&#34;],
+                                                model=self.system_dict[&#34;local&#34;][&#34;model&#34;],
+                                                conf_thres=0.001 if final_epoch and is_coco else 0.1,  # 0.1 for speed
+                                                iou_thres=0.6,
+                                                save_json=final_epoch and is_coco,
+                                                single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;],
+                                                dataloader=self.system_dict[&#34;local&#34;][&#34;testloader&#34;])
+
+            # Update scheduler
+            self.system_dict[&#34;local&#34;][&#34;scheduler&#34;].step()
+
+
+            if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+                # Write epoch results
+                with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;a&#39;) as f:
+                    f.write(s + &#39;%10.3g&#39; * 7 % results + &#39;\n&#39;)  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
+                if len(self.system_dict[&#34;params&#34;][&#34;name&#34;]) and self.system_dict[&#34;params&#34;][&#34;bucket&#34;]:
+                    os.system(&#39;gsutil cp results.txt gs://%s/results%s.txt&#39; % (self.system_dict[&#34;params&#34;][&#34;bucket&#34;], 
+                                                                                self.system_dict[&#34;params&#34;][&#34;name&#34;]))
+
+                # Write Tensorboard results
+                if self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;]:
+                    x = list(mloss) + list(results)
+                    titles = [&#39;GIoU&#39;, &#39;Objectness&#39;, &#39;Classification&#39;, &#39;Train loss&#39;,
+                              &#39;Precision&#39;, &#39;Recall&#39;, &#39;mAP&#39;, &#39;F1&#39;, &#39;val GIoU&#39;, &#39;val Objectness&#39;, &#39;val Classification&#39;]
+                    for xi, title in zip(x, titles):
+                        self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;].add_scalar(title, xi, epoch)
+
+                # Update best mAP
+                fitness = sum(results[4:])  # total loss
+                if fitness &lt; self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;]:
+                    self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = fitness
+
+
+                # Save training results
+                save = (not self.system_dict[&#34;params&#34;][&#34;nosave&#34;]) or (final_epoch and not self.system_dict[&#34;params&#34;][&#34;evolve&#34;])
+                if save:
+                    with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;r&#39;) as f:
+                        # Create checkpoint
+                        chkpt = {&#39;epoch&#39;: epoch,
+                                 &#39;best_fitness&#39;: self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;],
+                                 &#39;training_results&#39;: f.read(),
+                                 &#39;model&#39;: self.system_dict[&#34;local&#34;][&#34;model&#34;].module.state_dict() if type(
+                                      self.system_dict[&#34;local&#34;][&#34;model&#34;]) is nn.parallel.DistributedDataParallel else  self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict(),
+                                 &#39;optimizer&#39;: None if final_epoch else  self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].state_dict()}
+
+                    # Save last checkpoint
+                    torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;])
+
+                    # Save best checkpoint
+                    if self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] == fitness:
+                        torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;best&#34;])
+
+                    # Save backup every 1 epochs (optional)
+                    if epoch &gt; 0 and epoch % 1 == 0:
+                        torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;backup%g.pt&#39; % epoch)
+
+                    # Delete checkpoint
+                    del chkpt
+
+            else:
+                chkpt = {&#39;epoch&#39;: epoch,
+                                 &#39;best_fitness&#39;: 0.0,
+                                 &#39;training_results&#39;: &#34;&#34;,
+                                 &#39;model&#39;: self.system_dict[&#34;local&#34;][&#34;model&#34;].module.state_dict() if type(
+                                      self.system_dict[&#34;local&#34;][&#34;model&#34;]) is nn.parallel.DistributedDataParallel else  self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict(),
+                                 &#39;optimizer&#39;: None if final_epoch else  self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].state_dict()}
+
+                # Save last checkpoint
+                torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;])
+
+
+                # Save backup every 1 epochs (optional)
+                if epoch &gt; 0 and epoch % 1 == 0:
+                    torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;backup%g.pt&#39; % epoch)
+
+                # Delete checkpoint
+                del chkpt
+
+
+        # end training
+        if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            n = self.system_dict[&#34;params&#34;][&#34;name&#34;]
+            if len(n):
+                n = &#39;_&#39; + n if not n.isnumeric() else n
+                fresults, flast, fbest = &#39;results%s.txt&#39; % n, &#39;last%s.pt&#39; % n, &#39;best%s.pt&#39; % n
+                os.rename(&#39;results.txt&#39;, fresults)
+                os.rename(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;, 
+                    self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + flast) if os.path.exists(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;) else None
+                os.rename(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;, 
+                    self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + fbest) if os.path.exists(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;) else None
+
+                # save to cloud
+                if self.system_dict[&#34;params&#34;][&#34;bucket&#34;]:
+                    os.system(&#39;gsutil cp %s %s gs://%s&#39; % (fresults, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + flast, 
+                        self.system_dict[&#34;params&#34;][&#34;bucket&#34;]))
+
+            if not self.system_dict[&#34;params&#34;][&#34;evolve&#34;]:
+                plot_results()  # save as results.png
+            print(&#39;%g epochs completed in %.3f hours.\n&#39; % (epoch - self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] + 1, (time.time() - t0) / 3600))
+            dist.destroy_process_group() if torch.cuda.device_count() &gt; 1 else None
+            torch.cuda.empty_cache()
+
+            return results</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="7_yolov3.lib.train_detector.Detector.Train"><code class="name flex">
+<span>def <span class="ident">Train</span></span>(<span>self, num_epochs=2)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>User function: Set training params and train</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>num_epochs</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of epochs in training</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Train(self, num_epochs=2):
+    &#39;&#39;&#39;
+    User function: Set training params and train
+
+    Args:
+        num_epochs (int): Number of epochs in training
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    self.system_dict[&#34;params&#34;][&#34;epochs&#34;] = num_epochs;
+
+    if not self.system_dict[&#34;params&#34;][&#34;evolve&#34;]:
+        self.setup();
+        self.start_training();
+    else:
+        if(not self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            print(&#34;Validation data required for evolving hyper-parameters&#34;);
+        else:
+            for _ in range(self.system_dict[&#34;params&#34;][&#34;num_generations&#34;]):  # generations to evolve
+                if os.path.exists(&#39;evolve.txt&#39;):  # if evolve.txt exists: select best hyps and mutate
+                    # Select parent(s)
+                    x = np.loadtxt(&#39;evolve.txt&#39;, ndmin=2)
+                    parent = &#39;single&#39;  # parent selection method: &#39;single&#39; or &#39;weighted&#39;
+                    if parent == &#39;single&#39; or len(x) == 1:
+                        x = x[fitness(x).argmax()]
+                    elif parent == &#39;weighted&#39;:  # weighted combination
+                        n = min(10, len(x))  # number to merge
+                        x = x[np.argsort(-fitness(x))][:n]  # top n mutations
+                        w = fitness(x) - fitness(x).min()  # weights
+                        x = (x * w.reshape(n, 1)).sum(0) / w.sum()  # new parent
+
+                    # Mutate
+                    method = 3
+                    s = 0.3  # 20% sigma
+                    np.random.seed(int(time.time()))
+                    g = np.array([1, 1, 1, 1, 1, 1, 1, 0, .1, 1, 0, 1, 1, 1, 1, 1, 1, 1])  # gains
+                    ng = len(g)
+                    if method == 1:
+                        v = (np.random.randn(ng) * np.random.random() * g * s + 1) ** 2.0
+                    elif method == 2:
+                        v = (np.random.randn(ng) * np.random.random(ng) * g * s + 1) ** 2.0
+                    elif method == 3:
+                        v = np.ones(ng)
+                        while all(v == 1):  # mutate until a change occurs (prevent duplicates)
+                            r = (np.random.random(ng) &lt; 0.1) * np.random.randn(ng)  # 10% mutation probability
+                            v = (g * s * r + 1) ** 2.0
+                    for i, k in enumerate(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;].keys()):  # plt.hist(v.ravel(), 300)
+                        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k] = x[i + 7] * v[i]  # mutate
+
+                # Clip to limits
+                keys = [&#39;lr0&#39;, &#39;iou_t&#39;, &#39;momentum&#39;, &#39;weight_decay&#39;, &#39;hsv_s&#39;, &#39;hsv_v&#39;, &#39;translate&#39;, &#39;scale&#39;, &#39;fl_gamma&#39;]
+                limits = [(1e-5, 1e-2), (0.00, 0.70), (0.60, 0.98), (0, 0.001), (0, .9), (0, .9), (0, .9), (0, .9), (0, 3)]
+                for k, v in zip(keys, limits):
+                    self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k] = np.clip(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][k], v[0], v[1])
+
+                # Train mutation
+                self.setup();
+                results = self.start_training();
+                self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = self.system_dict[&#34;params&#34;][&#34;img_size_selected&#34;];
+
+                # Write mutation results
+                print_mutation(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;], results, self.system_dict[&#34;params&#34;][&#34;bucket&#34;])
+
+                # Plot results
+                plot_evolution_results(self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;])</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.set_fixed_params"><code class="name flex">
+<span>def <span class="ident">set_fixed_params</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Internal function: Set fixed parameters</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>None</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_fixed_params(self):
+    &#39;&#39;&#39;
+    Internal function: Set fixed parameters
+
+    Args:
+        None
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] = &#39;weights&#39; + os.sep  
+    self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;] = self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;
+    self.system_dict[&#34;fixed_params&#34;][&#34;best&#34;] = self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;
+    self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;] = &#39;results.txt&#39;
+
+    self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;] = {&#39;giou&#39;: 3.54,  # giou loss gain
+                                               &#39;cls&#39;: 37.4,  # cls loss gain
+                                               &#39;cls_pw&#39;: 1.0,  # cls BCELoss positive_weight
+                                               &#39;obj&#39;: 49.5,  # obj loss gain (*=img_size/320 if img_size != 320)
+                                               &#39;obj_pw&#39;: 1.0,  # obj BCELoss positive_weight
+                                               &#39;iou_t&#39;: 0.225,  # iou training threshold
+                                               &#39;lr0&#39;: 0.00579,  # initial learning rate (SGD=5E-3, Adam=5E-4)
+                                               &#39;lrf&#39;: -4.,  # final LambdaLR learning rate = lr0 * (10 ** lrf)
+                                               &#39;momentum&#39;: 0.937,  # SGD momentum
+                                               &#39;weight_decay&#39;: 0.000484,  # optimizer weight decay
+                                               &#39;fl_gamma&#39;: 0.5,  # focal loss gamma
+                                               &#39;hsv_h&#39;: 0.0138,  # image HSV-Hue augmentation (fraction)
+                                               &#39;hsv_s&#39;: 0.678,  # image HSV-Saturation augmentation (fraction)
+                                               &#39;hsv_v&#39;: 0.36,  # image HSV-Value augmentation (fraction)
+                                               &#39;degrees&#39;: 1.98,  # image rotation (+/- deg)
+                                               &#39;translate&#39;: 0.05,  # image translation (+/- fraction)
+                                               &#39;scale&#39;: 0.05,  # image scale (+/- gain)
+                                               &#39;shear&#39;: 0.641}  # image shear (+/- deg)
+
+    # Overwrite hyp with hyp*.txt (optional)
+    f = glob.glob(&#39;hyp*.txt&#39;)
+    if f:
+        print(&#39;Using %s&#39; % f[0])
+        for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
+            hyp[k] = v</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.set_hyperparams"><code class="name flex">
+<span>def <span class="ident">set_hyperparams</span></span>(<span>self, optimizer='sgd', lr=0.00579, multi_scale=False, evolve=False, num_generations=2, mixed_precision=True, gpu_devices='0')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>User function: Set hyper parameters
+Available optimizers
+sgd
+adam</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
+<dd>Select the right optimizer</dd>
+<dt><strong><code>lr</code></strong> :&ensp;<code>float</code></dt>
+<dd>Initial learning rate for training</dd>
+<dt><strong><code>multi_scale</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, run multi-scale training.</dd>
+<dt><strong><code>evolve</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, runs multiple epochs in every generation and updates hyper-params accordingly</dd>
+<dt><strong><code>mixed_precision</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, uses both 16-bit and 32-bit floating-point types in a model during training to make it run faster and use less memory.</dd>
+<dt><strong><code>gpu_devices</code></strong> :&ensp;<code>str</code></dt>
+<dd>List of all GPU device IDs separated by a comma in a string</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_hyperparams(self, optimizer=&#34;sgd&#34;, lr=0.00579, multi_scale=False, evolve=False, num_generations=2, 
+                    mixed_precision=True, gpu_devices=&#34;0&#34;):
+    &#39;&#39;&#39;
+    User function: Set hyper parameters
+        Available optimizers
+            sgd
+            adam
+
+    Args:
+        optimizer (str): Select the right optimizer
+        lr (float): Initial learning rate for training
+        multi_scale (bool): If True, run multi-scale training.
+        evolve (bool): If True, runs multiple epochs in every generation and updates hyper-params accordingly
+        mixed_precision (bool): If True, uses both 16-bit and 32-bit floating-point types in a model during training to make it run faster and use less memory.
+        gpu_devices (str): List of all GPU device IDs separated by a comma in a string
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;] = multi_scale;
+    if(optimizer == &#34;sgd&#34;):
+        self.system_dict[&#34;params&#34;][&#34;adam&#34;] = False;
+    self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#34;lr0&#34;] = lr;
+    self.system_dict[&#34;params&#34;][&#34;rect&#34;] = False;
+    self.system_dict[&#34;params&#34;][&#34;resume&#34;] = False;
+    self.system_dict[&#34;params&#34;][&#34;nosave&#34;] = False;
+    self.system_dict[&#34;params&#34;][&#34;notest&#34;] = False;
+    self.system_dict[&#34;params&#34;][&#34;evolve&#34;] = evolve;
+    self.system_dict[&#34;params&#34;][&#34;num_generations&#34;] = num_generations;
+    self.system_dict[&#34;params&#34;][&#34;bucket&#34;] = &#34;&#34;;
+    self.system_dict[&#34;params&#34;][&#34;weights&#34;] = &#34;&#34;;
+    self.system_dict[&#34;params&#34;][&#34;arc&#34;] = &#34;default&#34;;
+    self.system_dict[&#34;params&#34;][&#34;name&#34;] = &#34;&#34;;
+    self.system_dict[&#34;params&#34;][&#34;device&#34;] = gpu_devices;
+    self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = mixed_precision;</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.set_model"><code class="name flex">
+<span>def <span class="ident">set_model</span></span>(<span>self, model_name='yolov3')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>User function: Set Model parameters</p>
+<pre><code>Available Models
+    yolov3
+    yolov3s
+    yolov3-spp
+    yolov3-spp3
+    yolov3-tiny
+    yolov3-spp-matrix
+    csresnext50-panet-spp
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>model_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Select model from available models</dd>
+<dt><strong><code>gpu_devices</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of GPU Device IDs to be used in training</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_model(self, model_name=&#34;yolov3&#34;):
+    &#39;&#39;&#39;
+    User function: Set Model parameters
+
+        Available Models
+            yolov3
+            yolov3s
+            yolov3-spp
+            yolov3-spp3
+            yolov3-tiny
+            yolov3-spp-matrix
+            csresnext50-panet-spp
+
+
+    Args:
+        model_name (str): Select model from available models
+        gpu_devices (list): List of GPU Device IDs to be used in training
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    tmp_cfg = os.path.dirname(os.path.realpath(__file__)) + &#34;/cfg/&#34; + model_name + &#34;.cfg&#34;;
+    cmd = &#34;cp &#34; + tmp_cfg + &#34; &#34; + os.getcwd() + &#34;/&#34; + model_name + &#34;.cfg&#34;;
+    os.system(cmd);
+    self.system_dict[&#34;params&#34;][&#34;cfg&#34;] = model_name + &#34;.cfg&#34;;</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.set_train_dataset"><code class="name flex">
+<span>def <span class="ident">set_train_dataset</span></span>(<span>self, img_dir, label_dir, class_list, batch_size=2, img_size=416, cache_images=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>User function: Set training dataset parameters</p>
+<p>Dataset Directory Structure</p>
+<pre><code>        root_dir
+          |
+          |-----------images (img_dir)
+          |              |
+          |              |------------------img1.jpg
+          |              |------------------img2.jpg
+          |              |------------------.........(and so on)
+          |
+          |-----------labels (label_dir)
+          |              |
+          |              |------------------img1.txt
+          |              |------------------img2.txt
+          |              |------------------.........(and so on)
+          |
+          |------------classes.txt
+
+
+Classes file
+
+     List of classes in every new line.
+     The order corresponds to the IDs in annotation files
+
+     Eg.
+          class1               (------------------------------&gt; if will be 0)
+          class2               (------------------------------&gt; if will be 1)
+          class3               (------------------------------&gt; if will be 2)
+          class4               (------------------------------&gt; if will be 3)
+
+
+Annotation file format
+
+    CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+
+    (All the coordinates should be normalized)
+    (X coordinates divided by width of image, Y coordinates divided by height of image)
+
+    Ex. (One line per bounding box of object in image)
+        class_id x1 y1 w h
+        class_id x1 y1 w h
+        ..... (and so on)
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>img_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>Relative path to folder containing all training images</dd>
+<dt><strong><code>label_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>Relative path to folder containing all training labels text files</dd>
+<dt><strong><code>class_list</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of all classes in dataset</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>Mini batch sampling size for training epochs</dd>
+<dt><strong><code>cache_images</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, images are cached for faster loading</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_train_dataset(self, img_dir, label_dir, class_list, batch_size=2, img_size=416, cache_images=False):
+    &#39;&#39;&#39;
+    User function: Set training dataset parameters
+
+    Dataset Directory Structure
+
+                root_dir
+                  |
+                  |-----------images (img_dir)
+                  |              |
+                  |              |------------------img1.jpg
+                  |              |------------------img2.jpg
+                  |              |------------------.........(and so on)
+                  |
+                  |-----------labels (label_dir)
+                  |              |
+                  |              |------------------img1.txt
+                  |              |------------------img2.txt
+                  |              |------------------.........(and so on)
+                  |
+                  |------------classes.txt 
+                  
+
+        Classes file
+         
+             List of classes in every new line.
+             The order corresponds to the IDs in annotation files
+             
+             Eg.
+                  class1               (------------------------------&gt; if will be 0)
+                  class2               (------------------------------&gt; if will be 1)
+                  class3               (------------------------------&gt; if will be 2)
+                  class4               (------------------------------&gt; if will be 3)
+                  
+
+        Annotation file format
+
+            CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+            
+            (All the coordinates should be normalized)
+            (X coordinates divided by width of image, Y coordinates divided by height of image)
+            
+            Ex. (One line per bounding box of object in image)
+                class_id x1 y1 w h
+                class_id x1 y1 w h
+                ..... (and so on)
+    
+
+    Args:
+        img_dir (str): Relative path to folder containing all training images
+        label_dir (str): Relative path to folder containing all training labels text files
+        class_list (list): List of all classes in dataset
+        batch_size (int): Mini batch sampling size for training epochs
+        cache_images (bool): If True, images are cached for faster loading
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;img_dir&#34;] = img_dir;
+    self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;label_dir&#34;] = label_dir;
+    self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;class_list&#34;] = class_list;
+    self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] = batch_size;
+    self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] = batch_size;
+    self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = [img_size];
+    self.system_dict[&#34;params&#34;][&#34;img_size_selected&#34;] = [img_size];
+    self.system_dict[&#34;params&#34;][&#34;cache_images&#34;] = cache_images;</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.set_val_dataset"><code class="name flex">
+<span>def <span class="ident">set_val_dataset</span></span>(<span>self, img_dir, label_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>User function: Set training dataset parameters</p>
+<p>Dataset Directory Structure</p>
+<pre><code>        root_dir
+          |
+          |-----------images (img_dir)
+          |              |
+          |              |------------------img1.jpg
+          |              |------------------img2.jpg
+          |              |------------------.........(and so on)
+          |
+          |-----------labels (label_dir)
+          |              |
+          |              |------------------img1.txt
+          |              |------------------img2.txt
+          |              |------------------.........(and so on)
+          |
+          |------------classes.txt
+
+
+Classes file
+
+     List of classes in every new line.
+     The order corresponds to the IDs in annotation files
+
+     Eg.
+          class1               (------------------------------&gt; if will be 0)
+          class2               (------------------------------&gt; if will be 1)
+          class3               (------------------------------&gt; if will be 2)
+          class4               (------------------------------&gt; if will be 3)
+
+
+Annotation file format
+
+    CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+
+    (All the coordinates should be normalized)
+    (X coordinates divided by width of image, Y coordinates divided by height of image)
+
+    Ex. (One line per bounding box of object in image)
+        class_id x1 y1 w h
+        class_id x1 y1 w h
+        ..... (and so on)
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>img_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>Relative path to folder containing all validation images</dd>
+<dt><strong><code>label_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>Relative path to folder containing all validation labels text files</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_val_dataset(self, img_dir, label_dir):
+    &#39;&#39;&#39;
+    User function: Set training dataset parameters
+
+    Dataset Directory Structure
+
+                root_dir
+                  |
+                  |-----------images (img_dir)
+                  |              |
+                  |              |------------------img1.jpg
+                  |              |------------------img2.jpg
+                  |              |------------------.........(and so on)
+                  |
+                  |-----------labels (label_dir)
+                  |              |
+                  |              |------------------img1.txt
+                  |              |------------------img2.txt
+                  |              |------------------.........(and so on)
+                  |
+                  |------------classes.txt 
+                  
+
+        Classes file
+         
+             List of classes in every new line.
+             The order corresponds to the IDs in annotation files
+             
+             Eg.
+                  class1               (------------------------------&gt; if will be 0)
+                  class2               (------------------------------&gt; if will be 1)
+                  class3               (------------------------------&gt; if will be 2)
+                  class4               (------------------------------&gt; if will be 3)
+                  
+
+        Annotation file format
+
+            CLASS_ID BOX_X_CENTER BOX_Y_CENTER WIDTH BOX_WIDTH BOX_HEIGHT
+            
+            (All the coordinates should be normalized)
+            (X coordinates divided by width of image, Y coordinates divided by height of image)
+            
+            Ex. (One line per bounding box of object in image)
+                class_id x1 y1 w h
+                class_id x1 y1 w h
+                ..... (and so on)
+    
+
+    Args:
+        img_dir (str): Relative path to folder containing all validation images
+        label_dir (str): Relative path to folder containing all validation labels text files
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;] = img_dir;
+    self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;] = label_dir;
+    self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;] = True;</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.setup"><code class="name flex">
+<span>def <span class="ident">setup</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Internal function: Setup all the dataset, model and data params </p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>None</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setup(self):
+    &#39;&#39;&#39;
+    Internal function: Setup all the dataset, model and data params 
+
+    Args:
+        None
+
+    Returns:
+        None
+    &#39;&#39;&#39;
+    if(not os.path.isdir(&#34;weights&#34;)):
+        os.mkdir(&#34;weights&#34;);
+
+
+    #Device Setup
+    self.system_dict[&#34;params&#34;][&#34;weights&#34;] = last if self.system_dict[&#34;params&#34;][&#34;resume&#34;] else self.system_dict[&#34;params&#34;][&#34;weights&#34;]
+    self.system_dict[&#34;local&#34;][&#34;device&#34;] = torch_utils.select_device(self.system_dict[&#34;params&#34;][&#34;device&#34;], 
+                                                                    apex=self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;], 
+                                                                    batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;])
+    if self.system_dict[&#34;local&#34;][&#34;device&#34;].type == &#39;cpu&#39;:
+        self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;] = False
+
+    self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;] = None
+    self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;] = SummaryWriter()
+
+
+    #Data Setup
+    img_size, img_size_test = self.system_dict[&#34;params&#34;][&#34;img_size&#34;] if len(self.system_dict[&#34;params&#34;][&#34;img_size&#34;]) == 2 else self.system_dict[&#34;params&#34;][&#34;img_size&#34;] * 2 
+
+    init_seeds()
+    if self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;]:
+        img_sz_min = round(img_size / 32 / 1.5)
+        img_sz_max = round(img_size / 32 * 1.5)
+        img_size = img_sz_max * 32  # initiate with maximum multi_scale size
+        print(&#39;Using multi-scale %g - %g&#39; % (img_sz_min * 32, img_size))
+
+        self.system_dict[&#34;params&#34;][&#34;img_sz_min&#34;] = img_sz_min;
+        self.system_dict[&#34;params&#34;][&#34;img_sz_max&#34;] = img_sz_max;
+
+    self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = img_size;
+    self.system_dict[&#34;params&#34;][&#34;img_size_test&#34;] = img_size_test;
+
+    f = open(self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;class_list&#34;], &#39;r&#39;);
+    lines = f.readlines();
+    f.close();
+
+    self.system_dict[&#34;local&#34;][&#34;classes&#34;] = [];
+    for i in range(len(lines)):
+        if(lines[i] != &#34;&#34; and lines[i] != &#34;\n&#34; ):
+            self.system_dict[&#34;local&#34;][&#34;classes&#34;].append(lines[i]);
+    self.system_dict[&#34;local&#34;][&#34;num_classes&#34;] = int(len(self.system_dict[&#34;local&#34;][&#34;classes&#34;]));
+    if(self.system_dict[&#34;local&#34;][&#34;num_classes&#34;] == 1):
+        self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] = True;
+    else:
+        self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] = False;
+
+
+    self.system_dict[&#34;local&#34;][&#34;nc&#34;] = 1 if self.system_dict[&#34;params&#34;][&#34;single_cls&#34;] else self.system_dict[&#34;local&#34;][&#34;num_classes&#34;]
+
+    # Remove previous results
+    for f in glob.glob(&#39;*_batch*.png&#39;) + glob.glob(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;]):
+        os.remove(f)
+
+    if &#39;pw&#39; not in self.system_dict[&#34;params&#34;][&#34;arc&#34;]:  # remove BCELoss positive weights
+        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;cls_pw&#39;] = 1.
+        self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;obj_pw&#39;] = 1.
+    
+
+
+    #Update Config file
+    update(self.system_dict[&#34;params&#34;][&#34;cfg&#34;], self.system_dict[&#34;local&#34;][&#34;num_classes&#34;]);
+
+    #Model
+    self.system_dict[&#34;local&#34;][&#34;model&#34;] = Darknet(self.system_dict[&#34;params&#34;][&#34;cfg&#34;], 
+                                        arc=self.system_dict[&#34;params&#34;][&#34;arc&#34;]).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+    attempt_download(self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+
+    # Optimizer
+    pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
+    for k, v in dict(self.system_dict[&#34;local&#34;][&#34;model&#34;].named_parameters()).items():
+        if &#39;.bias&#39; in k:
+            pg2 += [v]  # biases
+        elif &#39;Conv2d.weight&#39; in k:
+            pg1 += [v]  # apply weight_decay
+        else:
+            pg0 += [v]  # all else
+
+    if self.system_dict[&#34;params&#34;][&#34;adam&#34;]:
+        # hyp[&#39;lr0&#39;] *= 0.1  # reduce lr (i.e. SGD=5E-3, Adam=5E-4)
+        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = optim.Adam(pg0, lr=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;])
+        # optimizer = AdaBound(pg0, lr=hyp[&#39;lr0&#39;], final_lr=0.1)
+    else:
+        self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = optim.SGD(pg0, lr=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;], 
+                                                                momentum=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;momentum&#39;], nesterov=True)
+
+    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].add_param_group({&#39;params&#39;: pg1, &#39;weight_decay&#39;: self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;weight_decay&#39;]})  # add pg1 with weight_decay
+    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].add_param_group({&#39;params&#39;: pg2})  # add pg2 (biases)
+    del pg0, pg1, pg2
+
+
+    self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] = 0
+    self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = float(&#39;inf&#39;)
+
+    if self.system_dict[&#34;params&#34;][&#34;weights&#34;].endswith(&#39;.pt&#39;):  
+        chkpt = torch.load(self.system_dict[&#34;params&#34;][&#34;weights&#34;], map_location=self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+        # load model
+        try:
+            chkpt[&#39;model&#39;] = {k: v for k, v in chkpt[&#39;model&#39;].items() if self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict()[k].numel() == v.numel()}
+            self.system_dict[&#34;local&#34;][&#34;model&#34;].load_state_dict(chkpt[&#39;model&#39;], strict=False)
+        except KeyError as e:
+            s = &#34;%s is not compatible with %s. Specify --weights &#39;&#39; or specify a --cfg compatible with %s. &#34; \
+                &#34;See https://github.com/ultralytics/yolov3/issues/657&#34; % (self.system_dict[&#34;params&#34;][&#34;weights&#34;], self.system_dict[&#34;params&#34;][&#34;cfg&#34;], 
+                                                                          self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+            raise KeyError(s) from e
+
+        # load optimizer
+        if chkpt[&#39;optimizer&#39;] is not None:
+            self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].load_state_dict(chkpt[&#39;optimizer&#39;])
+            self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = chkpt[&#39;best_fitness&#39;]
+
+        # load results
+        if chkpt.get(&#39;training_results&#39;) is not None:
+            with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;w&#39;) as file:
+                file.write(chkpt[&#39;training_results&#39;])
+
+        self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] = chkpt[&#39;epoch&#39;] + 1
+        del chkpt
+
+    elif len(self.system_dict[&#34;params&#34;][&#34;weights&#34;]) &gt; 0:  # darknet format
+        # possible weights are &#39;*.weights&#39;, &#39;yolov3-tiny.conv.15&#39;,  &#39;darknet53.conv.74&#39; etc.
+        load_darknet_weights(self.system_dict[&#34;local&#34;][&#34;model&#34;], self.system_dict[&#34;params&#34;][&#34;weights&#34;])
+
+
+    #Scheduler
+    self.system_dict[&#34;local&#34;][&#34;scheduler&#34;] = lr_scheduler.MultiStepLR(self.system_dict[&#34;local&#34;][&#34;optimizer&#34;], 
+                                                milestones=[round(self.system_dict[&#34;params&#34;][&#34;epochs&#34;] * x) for x in [0.8, 0.9]], gamma=0.1)
+    self.system_dict[&#34;local&#34;][&#34;scheduler&#34;].last_epoch = self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] - 1
+
+
+    if self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;]:
+        self.system_dict[&#34;local&#34;][&#34;model&#34;], self.system_dict[&#34;local&#34;][&#34;optimizer&#34;] = amp.initialize(self.system_dict[&#34;local&#34;][&#34;model&#34;], 
+                                                                                                    self.system_dict[&#34;local&#34;][&#34;optimizer&#34;], 
+                                                                                                    opt_level=&#39;O1&#39;, verbosity=0)
+        
+        
+    # Initialize distributed training
+    if self.system_dict[&#34;local&#34;][&#34;device&#34;].type != &#39;cpu&#39; and torch.cuda.device_count() &gt; 1:
+        dist.init_process_group(backend=&#39;nccl&#39;, 
+                                init_method=&#39;tcp://127.0.0.1:9999&#39;,  
+                                world_size=1,  
+                                rank=0)  
+        self.system_dict[&#34;local&#34;][&#34;model&#34;] = torch.nn.parallel.DistributedDataParallel(self.system_dict[&#34;local&#34;][&#34;model&#34;], 
+                                                                                        find_unused_parameters=True)
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].yolo_layers = self.system_dict[&#34;local&#34;][&#34;model&#34;].module.yolo_layers 
+
+
+
+    # Dataset
+    self.system_dict[&#34;local&#34;][&#34;dataset&#34;] = LoadImagesAndLabels(self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;img_dir&#34;], 
+                                    self.system_dict[&#34;dataset&#34;][&#34;train&#34;][&#34;label_dir&#34;],
+                                    self.system_dict[&#34;params&#34;][&#34;img_size&#34;], 
+                                    self.system_dict[&#34;params&#34;][&#34;batch_size&#34;],
+                                    augment=True,
+                                    hyp=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;], 
+                                    rect=self.system_dict[&#34;params&#34;][&#34;rect&#34;],  
+                                    cache_labels=True,
+                                    cache_images=self.system_dict[&#34;params&#34;][&#34;cache_images&#34;],
+                                    single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;])
+    
+    # Dataloader
+    self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] = min(self.system_dict[&#34;params&#34;][&#34;batch_size&#34;], len(self.system_dict[&#34;local&#34;][&#34;dataset&#34;]))
+    self.system_dict[&#34;local&#34;][&#34;nw&#34;] = min([os.cpu_count(), self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] if self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] &gt; 1 else 0, 8])  
+    
+
+    self.system_dict[&#34;local&#34;][&#34;dataloader&#34;] = torch.utils.data.DataLoader(self.system_dict[&#34;local&#34;][&#34;dataset&#34;],
+                                             batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;],
+                                             num_workers=self.system_dict[&#34;local&#34;][&#34;nw&#34;],
+                                             shuffle=not self.system_dict[&#34;params&#34;][&#34;rect&#34;], 
+                                             pin_memory=True,
+                                             collate_fn=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].collate_fn)
+
+
+
+    # Testloader
+    if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+        self.system_dict[&#34;local&#34;][&#34;testloader&#34;] = torch.utils.data.DataLoader(LoadImagesAndLabels(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;], 
+                                                                                                    self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;],
+                                                                                                    self.system_dict[&#34;params&#34;][&#34;img_size&#34;], 
+                                                                                                    self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                                                                    hyp=self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;],
+                                                                                                    rect=False,
+                                                                                                    cache_labels=True,
+                                                                                                    cache_images=self.system_dict[&#34;params&#34;][&#34;cache_images&#34;],
+                                                                                                    single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;]),
+                                                                                 batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                                                                 num_workers=self.system_dict[&#34;local&#34;][&#34;nw&#34;],
+                                                                                 pin_memory=True,
+                                                                                 collate_fn=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].collate_fn)</code></pre>
+</details>
+</dd>
+<dt id="7_yolov3.lib.train_detector.Detector.start_training"><code class="name flex">
+<span>def <span class="ident">start_training</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Internal function: Start training post setting up all params</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>None</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>Training and validation epoch results</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start_training(self):
+    &#39;&#39;&#39;
+    Internal function: Start training post setting up all params
+
+    Args:
+        None
+
+    Returns:
+        str: Training and validation epoch results
+    &#39;&#39;&#39;
+    self.system_dict[&#34;local&#34;][&#34;nb&#34;] = len(self.system_dict[&#34;local&#34;][&#34;dataloader&#34;])
+    prebias = self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] == 0
+    self.system_dict[&#34;local&#34;][&#34;model&#34;].nc = self.system_dict[&#34;local&#34;][&#34;nc&#34;]  # attach number of classes to model
+    self.system_dict[&#34;local&#34;][&#34;model&#34;].arc = self.system_dict[&#34;params&#34;][&#34;arc&#34;]  # attach yolo architecture
+    self.system_dict[&#34;local&#34;][&#34;model&#34;].hyp = self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;]  # attach hyperparameters to model
+    self.system_dict[&#34;local&#34;][&#34;model&#34;].class_weights = labels_to_class_weights(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].labels, 
+                                                            self.system_dict[&#34;local&#34;][&#34;nc&#34;]).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])  # attach class weights
+    maps = np.zeros(self.system_dict[&#34;local&#34;][&#34;nc&#34;])  # mAP per class
+    # torch.autograd.set_detect_anomaly(True)
+    results = (0, 0, 0, 0, 0, 0, 0)  # &#39;P&#39;, &#39;R&#39;, &#39;mAP&#39;, &#39;F1&#39;, &#39;val GIoU&#39;, &#39;val Objectness&#39;, &#39;val Classification&#39;
+    t0 = time.time()
+    torch_utils.model_info(self.system_dict[&#34;local&#34;][&#34;model&#34;], report=&#39;summary&#39;)  # &#39;full&#39; or &#39;summary&#39;
+    print(&#39;Using %g dataloader workers&#39; % self.system_dict[&#34;local&#34;][&#34;nw&#34;])
+    print(&#39;Starting training for %g epochs...&#39; % self.system_dict[&#34;params&#34;][&#34;epochs&#34;])
+
+
+    for epoch in range(self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;], self.system_dict[&#34;params&#34;][&#34;epochs&#34;]):  # epoch ------------------------------
+        self.system_dict[&#34;local&#34;][&#34;model&#34;].train()
+
+        # Prebias
+        if prebias:
+            if epoch &lt; 3:  # prebias
+                ps = 0.1, 0.9  # prebias settings (lr=0.1, momentum=0.9)
+            else:  # normal training
+                ps = self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;lr0&#39;], self.system_dict[&#34;fixed_params&#34;][&#34;hyp&#34;][&#39;momentum&#39;]  # normal training settings
+                print_model_biases(self.system_dict[&#34;local&#34;][&#34;model&#34;])
+                prebias = False
+
+            # Bias optimizer settings
+            self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2][&#39;lr&#39;] = ps[0]
+            if self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2].get(&#39;momentum&#39;) is not None:  # for SGD but not Adam
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].param_groups[2][&#39;momentum&#39;] = ps[1]
+
+        # Update image weights (optional)
+        if self.system_dict[&#34;local&#34;][&#34;dataset&#34;].image_weights:
+            print(&#34;in here&#34;)
+            w = self.system_dict[&#34;local&#34;][&#34;model&#34;].class_weights.cpu().numpy() * (1 - maps) ** 2  # class weights
+            image_weights = labels_to_image_weights(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].labels, 
+                                                    nc=self.system_dict[&#34;local&#34;][&#34;nc&#34;], 
+                                                    class_weights=w)
+            self.system_dict[&#34;local&#34;][&#34;dataset&#34;].indices = random.choices(range(self.system_dict[&#34;local&#34;][&#34;dataset&#34;].n), 
+                                                weights=image_weights, k=self.system_dict[&#34;local&#34;][&#34;dataset&#34;].n)  # rand weighted idx
+
+        mloss = torch.zeros(4).to(self.system_dict[&#34;local&#34;][&#34;device&#34;])  # mean losses
+        print((&#39;\n&#39; + &#39;%10s&#39; * 8) % (&#39;Epoch&#39;, &#39;gpu_mem&#39;, &#39;GIoU&#39;, &#39;obj&#39;, &#39;cls&#39;, &#39;total&#39;, &#39;targets&#39;, &#39;img_size&#39;))
+        pbar = tqdm(enumerate(self.system_dict[&#34;local&#34;][&#34;dataloader&#34;]), total=self.system_dict[&#34;local&#34;][&#34;nb&#34;])  # progress bar
+
+        for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
+
+            
+            ni = i + self.system_dict[&#34;local&#34;][&#34;nb&#34;] * epoch  # number integrated batches (since train start)
+            imgs = imgs.to(self.system_dict[&#34;local&#34;][&#34;device&#34;]).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
+            targets = targets.to(self.system_dict[&#34;local&#34;][&#34;device&#34;])
+
+            # Multi-Scale training
+            if self.system_dict[&#34;params&#34;][&#34;multi_scale&#34;]:
+                if ni / self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] % 10 == 0:  #  adjust (67% - 150%) every 10 batches
+                    self.system_dict[&#34;params&#34;][&#34;img_size&#34;] = random.randrange(self.system_dict[&#34;params&#34;][&#34;img_sz_min&#34;], self.system_dict[&#34;params&#34;][&#34;img_sz_max&#34;] + 1) * 32
+                sf = self.system_dict[&#34;params&#34;][&#34;img_size&#34;] / max(imgs.shape[2:])  # scale factor
+                if sf != 1:
+                    ns = [math.ceil(x * sf / 32.) * 32 for x in imgs.shape[2:]]  # new shape (stretched to 32-multiple)
+                    imgs = F.interpolate(imgs, size=ns, mode=&#39;bilinear&#39;, align_corners=False)
+
+            # Plot images with bounding boxes
+            if ni == 0:
+                fname = &#39;train_batch%g.png&#39; % i
+                plot_images(imgs=imgs, targets=targets, paths=paths, fname=fname)
+                if self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;]:
+                    self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;].add_image(fname, cv2.imread(fname)[:, :, ::-1], dataformats=&#39;HWC&#39;)
+
+            # Run model
+            pred = self.system_dict[&#34;local&#34;][&#34;model&#34;](imgs)
+
+            # Compute loss
+            loss, loss_items = compute_loss(pred, targets, self.system_dict[&#34;local&#34;][&#34;model&#34;], not prebias)
+            if not torch.isfinite(loss):
+                print(&#39;WARNING: non-finite loss, ending training &#39;, loss_items)
+                return results
+
+            # Scale loss by nominal batch_size of 64
+            loss *= self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] / 64
+
+            # Compute gradient
+            if self.system_dict[&#34;params&#34;][&#34;mixed_precision&#34;]:
+                with amp.scale_loss(loss, self.system_dict[&#34;local&#34;][&#34;optimizer&#34;]) as scaled_loss:
+                    scaled_loss.backward()
+            else:
+                loss.backward()
+
+            # Accumulate gradient for x batches before optimizing
+            if ni % self.system_dict[&#34;params&#34;][&#34;accumulate&#34;] == 0:
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].step()
+                self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].zero_grad()
+
+            # Print batch results
+            mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
+            mem = torch.cuda.memory_cached() / 1E9 if torch.cuda.is_available() else 0  # (GB)
+            s = (&#39;%10s&#39; * 2 + &#39;%10.3g&#39; * 6) % (
+                &#39;%g/%g&#39; % (epoch, self.system_dict[&#34;params&#34;][&#34;epochs&#34;] - 1), &#39;%.3gG&#39; % mem, *mloss, len(targets), self.system_dict[&#34;params&#34;][&#34;img_size&#34;])
+            pbar.set_description(s)
+
+            # end batch ------------------------------------------------------------------------------------------------
+
+        # Process epoch results
+        final_epoch = epoch + 1 == self.system_dict[&#34;params&#34;][&#34;epochs&#34;]
+
+
+        if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            if not self.system_dict[&#34;params&#34;][&#34;notest&#34;] or final_epoch:  # Calculate mAP
+                is_coco = False
+                results, maps = validate(self.system_dict[&#34;params&#34;][&#34;cfg&#34;],
+                                            self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;img_dir&#34;],
+                                            self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;label_dir&#34;],
+                                            self.system_dict[&#34;local&#34;][&#34;classes&#34;],
+                                            batch_size=self.system_dict[&#34;params&#34;][&#34;batch_size&#34;] * 2,
+                                            img_size=self.system_dict[&#34;params&#34;][&#34;img_size_test&#34;],
+                                            model=self.system_dict[&#34;local&#34;][&#34;model&#34;],
+                                            conf_thres=0.001 if final_epoch and is_coco else 0.1,  # 0.1 for speed
+                                            iou_thres=0.6,
+                                            save_json=final_epoch and is_coco,
+                                            single_cls=self.system_dict[&#34;params&#34;][&#34;single_cls&#34;],
+                                            dataloader=self.system_dict[&#34;local&#34;][&#34;testloader&#34;])
+
+        # Update scheduler
+        self.system_dict[&#34;local&#34;][&#34;scheduler&#34;].step()
+
+
+        if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+            # Write epoch results
+            with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;a&#39;) as f:
+                f.write(s + &#39;%10.3g&#39; * 7 % results + &#39;\n&#39;)  # P, R, mAP, F1, test_losses=(GIoU, obj, cls)
+            if len(self.system_dict[&#34;params&#34;][&#34;name&#34;]) and self.system_dict[&#34;params&#34;][&#34;bucket&#34;]:
+                os.system(&#39;gsutil cp results.txt gs://%s/results%s.txt&#39; % (self.system_dict[&#34;params&#34;][&#34;bucket&#34;], 
+                                                                            self.system_dict[&#34;params&#34;][&#34;name&#34;]))
+
+            # Write Tensorboard results
+            if self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;]:
+                x = list(mloss) + list(results)
+                titles = [&#39;GIoU&#39;, &#39;Objectness&#39;, &#39;Classification&#39;, &#39;Train loss&#39;,
+                          &#39;Precision&#39;, &#39;Recall&#39;, &#39;mAP&#39;, &#39;F1&#39;, &#39;val GIoU&#39;, &#39;val Objectness&#39;, &#39;val Classification&#39;]
+                for xi, title in zip(x, titles):
+                    self.system_dict[&#34;local&#34;][&#34;tb_writer&#34;].add_scalar(title, xi, epoch)
+
+            # Update best mAP
+            fitness = sum(results[4:])  # total loss
+            if fitness &lt; self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;]:
+                self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] = fitness
+
+
+            # Save training results
+            save = (not self.system_dict[&#34;params&#34;][&#34;nosave&#34;]) or (final_epoch and not self.system_dict[&#34;params&#34;][&#34;evolve&#34;])
+            if save:
+                with open(self.system_dict[&#34;fixed_params&#34;][&#34;results_file&#34;], &#39;r&#39;) as f:
+                    # Create checkpoint
+                    chkpt = {&#39;epoch&#39;: epoch,
+                             &#39;best_fitness&#39;: self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;],
+                             &#39;training_results&#39;: f.read(),
+                             &#39;model&#39;: self.system_dict[&#34;local&#34;][&#34;model&#34;].module.state_dict() if type(
+                                  self.system_dict[&#34;local&#34;][&#34;model&#34;]) is nn.parallel.DistributedDataParallel else  self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict(),
+                             &#39;optimizer&#39;: None if final_epoch else  self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].state_dict()}
+
+                # Save last checkpoint
+                torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;])
+
+                # Save best checkpoint
+                if self.system_dict[&#34;local&#34;][&#34;best_fitness&#34;] == fitness:
+                    torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;best&#34;])
+
+                # Save backup every 1 epochs (optional)
+                if epoch &gt; 0 and epoch % 1 == 0:
+                    torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;backup%g.pt&#39; % epoch)
+
+                # Delete checkpoint
+                del chkpt
+
+        else:
+            chkpt = {&#39;epoch&#39;: epoch,
+                             &#39;best_fitness&#39;: 0.0,
+                             &#39;training_results&#39;: &#34;&#34;,
+                             &#39;model&#39;: self.system_dict[&#34;local&#34;][&#34;model&#34;].module.state_dict() if type(
+                                  self.system_dict[&#34;local&#34;][&#34;model&#34;]) is nn.parallel.DistributedDataParallel else  self.system_dict[&#34;local&#34;][&#34;model&#34;].state_dict(),
+                             &#39;optimizer&#39;: None if final_epoch else  self.system_dict[&#34;local&#34;][&#34;optimizer&#34;].state_dict()}
+
+            # Save last checkpoint
+            torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;last&#34;])
+
+
+            # Save backup every 1 epochs (optional)
+            if epoch &gt; 0 and epoch % 1 == 0:
+                torch.save(chkpt, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;backup%g.pt&#39; % epoch)
+
+            # Delete checkpoint
+            del chkpt
+
+
+    # end training
+    if(self.system_dict[&#34;dataset&#34;][&#34;val&#34;][&#34;status&#34;]):
+        n = self.system_dict[&#34;params&#34;][&#34;name&#34;]
+        if len(n):
+            n = &#39;_&#39; + n if not n.isnumeric() else n
+            fresults, flast, fbest = &#39;results%s.txt&#39; % n, &#39;last%s.pt&#39; % n, &#39;best%s.pt&#39; % n
+            os.rename(&#39;results.txt&#39;, fresults)
+            os.rename(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;, 
+                self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + flast) if os.path.exists(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;last.pt&#39;) else None
+            os.rename(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;, 
+                self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + fbest) if os.path.exists(self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + &#39;best.pt&#39;) else None
+
+            # save to cloud
+            if self.system_dict[&#34;params&#34;][&#34;bucket&#34;]:
+                os.system(&#39;gsutil cp %s %s gs://%s&#39; % (fresults, self.system_dict[&#34;fixed_params&#34;][&#34;wdir&#34;] + flast, 
+                    self.system_dict[&#34;params&#34;][&#34;bucket&#34;]))
+
+        if not self.system_dict[&#34;params&#34;][&#34;evolve&#34;]:
+            plot_results()  # save as results.png
+        print(&#39;%g epochs completed in %.3f hours.\n&#39; % (epoch - self.system_dict[&#34;local&#34;][&#34;start_epoch&#34;] + 1, (time.time() - t0) / 3600))
+        dist.destroy_process_group() if torch.cuda.device_count() &gt; 1 else None
+        torch.cuda.empty_cache()
+
+        return results</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="7_yolov3.lib" href="index.html">7_yolov3.lib</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="7_yolov3.lib.train_detector.isnotebook" href="#7_yolov3.lib.train_detector.isnotebook">isnotebook</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="7_yolov3.lib.train_detector.Detector" href="#7_yolov3.lib.train_detector.Detector">Detector</a></code></h4>
+<ul class="two-column">
+<li><code><a title="7_yolov3.lib.train_detector.Detector.Train" href="#7_yolov3.lib.train_detector.Detector.Train">Train</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.set_fixed_params" href="#7_yolov3.lib.train_detector.Detector.set_fixed_params">set_fixed_params</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.set_hyperparams" href="#7_yolov3.lib.train_detector.Detector.set_hyperparams">set_hyperparams</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.set_model" href="#7_yolov3.lib.train_detector.Detector.set_model">set_model</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.set_train_dataset" href="#7_yolov3.lib.train_detector.Detector.set_train_dataset">set_train_dataset</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.set_val_dataset" href="#7_yolov3.lib.train_detector.Detector.set_val_dataset">set_val_dataset</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.setup" href="#7_yolov3.lib.train_detector.Detector.setup">setup</a></code></li>
+<li><code><a title="7_yolov3.lib.train_detector.Detector.start_training" href="#7_yolov3.lib.train_detector.Detector.start_training">start_training</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

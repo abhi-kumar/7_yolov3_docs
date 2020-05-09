@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>7_yolov3.lib.validate API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>7_yolov3.lib.validate</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import argparse
+import json
+
+from torch.utils.data import DataLoader
+
+from models import *
+from utils.datasets import *
+from utils.utils import *
+
+
+def validate(cfg,
+         img_dir,
+         label_dir,
+         classes,
+         weights=None,
+         batch_size=16,
+         img_size=416,
+         conf_thres=0.001,
+         iou_thres=0.5,  # for nms
+         save_json=False,
+         single_cls=False,
+         model=None,
+         dataloader=None):
+    # Initialize/load model and set device
+    if model is None:
+        device = torch_utils.select_device(opt.device, batch_size=batch_size)
+        verbose = opt.task == &#39;test&#39;
+
+        # Remove previous
+        for f in glob.glob(&#39;test_batch*.png&#39;):
+            os.remove(f)
+
+        # Initialize model
+        model = Darknet(cfg, img_size).to(device)
+
+        # Load weights
+        attempt_download(weights)
+        if weights.endswith(&#39;.pt&#39;):  # pytorch format
+            model.load_state_dict(torch.load(weights, map_location=device)[&#39;model&#39;])
+        else:  # darknet format
+            load_darknet_weights(model, weights)
+
+        if torch.cuda.device_count() &gt; 1:
+            model = nn.DataParallel(model)
+    else:  # called by train.py
+        device = next(model.parameters()).device  # get model device
+        verbose = False
+
+    # Configure run
+    
+    nc = 1 if single_cls else int(len(classes))  # number of classes
+    val_img_dir = img_dir;
+    val_label_dir = label_dir;
+    names = classes  # class names
+    iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
+    iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
+    niou = iouv.numel()
+
+    # Dataloader
+    if dataloader is None:
+        dataset = LoadImagesAndLabels(val_img_dir, val_label_dir, img_size, batch_size, rect=False)
+        batch_size = min(batch_size, len(dataset))
+        dataloader = DataLoader(dataset,
+                                batch_size=batch_size,
+                                num_workers=min([os.cpu_count(), batch_size if batch_size &gt; 1 else 0, 8]),
+                                pin_memory=True,
+                                collate_fn=dataset.collate_fn)
+
+    seen = 0
+    model.eval()
+    coco91class = coco80_to_coco91_class()
+    s = (&#39;%20s&#39; + &#39;%10s&#39; * 6) % (&#39;Class&#39;, &#39;Images&#39;, &#39;Targets&#39;, &#39;P&#39;, &#39;R&#39;, &#39;mAP@0.5&#39;, &#39;F1&#39;)
+    p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0.
+    loss = torch.zeros(3)
+    jdict, stats, ap, ap_class = [], [], [], []
+    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
+        imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
+        targets = targets.to(device)
+        _, _, height, width = imgs.shape  # batch size, channels, height, width
+
+        # Plot images with bounding boxes
+        if batch_i == 0 and not os.path.exists(&#39;test_batch0.png&#39;):
+            plot_images(imgs=imgs, targets=targets, paths=paths, fname=&#39;test_batch0.png&#39;)
+
+        # Disable gradients
+        with torch.no_grad():
+            # Run model
+            inf_out, train_out = model(imgs)  # inference and training outputs
+
+            # Compute loss
+            if hasattr(model, &#39;hyp&#39;):  # if model has loss hyperparameters
+                loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
+
+            # Run NMS
+            output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
+
+        # Statistics per image
+        for si, pred in enumerate(output):
+            labels = targets[targets[:, 0] == si, 1:]
+            nl = len(labels)
+            tcls = labels[:, 0].tolist() if nl else []  # target class
+            seen += 1
+
+            if pred is None:
+                if nl:
+                    stats.append((torch.zeros(0, niou, dtype=torch.bool), torch.Tensor(), torch.Tensor(), tcls))
+                continue
+
+            # Append to text file
+            # with open(&#39;test.txt&#39;, &#39;a&#39;) as file:
+            #    [file.write(&#39;%11.5g&#39; * 7 % tuple(x) + &#39;\n&#39;) for x in pred]
+
+            # Clip boxes to image bounds
+            clip_coords(pred, (height, width))
+
+            # Append to pycocotools JSON dictionary
+            if save_json:
+                # [{&#34;image_id&#34;: 42, &#34;category_id&#34;: 18, &#34;bbox&#34;: [258.15, 41.29, 348.26, 243.78], &#34;score&#34;: 0.236}, ...
+                image_id = int(Path(paths[si]).stem.split(&#39;_&#39;)[-1])
+                box = pred[:, :4].clone()  # xyxy
+                scale_coords(imgs[si].shape[1:], box, shapes[si][0], shapes[si][1])  # to original shape
+                box = xyxy2xywh(box)  # xywh
+                box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
+                for di, d in enumerate(pred):
+                    jdict.append({&#39;image_id&#39;: image_id,
+                                  &#39;category_id&#39;: coco91class[int(d[5])],
+                                  &#39;bbox&#39;: [floatn(x, 3) for x in box[di]],
+                                  &#39;score&#39;: floatn(d[4], 5)})
+
+            # Assign all predictions as incorrect
+            correct = torch.zeros(len(pred), niou, dtype=torch.bool)
+            if nl:
+                detected = []  # target indices
+                tcls_tensor = labels[:, 0]
+
+                # target boxes
+                tbox = xywh2xyxy(labels[:, 1:5]) * torch.Tensor([width, height, width, height]).to(device)
+
+                # Per target class
+                for cls in torch.unique(tcls_tensor):
+                    ti = (cls == tcls_tensor).nonzero().view(-1)  # prediction indices
+                    pi = (cls == pred[:, 5]).nonzero().view(-1)  # target indices
+
+                    # Search for detections
+                    if len(pi):
+                        # Prediction to target ious
+                        ious, i = box_iou(pred[pi, :4], tbox[ti]).max(1)  # best ious, indices
+
+                        # Append detections
+                        for j in (ious &gt; iouv[0]).nonzero():
+                            d = ti[i[j]]  # detected target
+                            if d not in detected:
+                                detected.append(d)
+                                correct[pi[j]] = (ious[j] &gt; iouv).cpu()  # iou_thres is 1xn
+                                if len(detected) == nl:  # all targets already located in image
+                                    break
+
+            # Append statistics (correct, conf, pcls, tcls)
+            stats.append((correct, pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
+
+    # Compute statistics
+    stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
+    if len(stats):
+        p, r, ap, f1, ap_class = ap_per_class(*stats)
+        if niou &gt; 1:
+            p, r, ap, f1 = p[:, 0], r[:, 0], ap.mean(1), ap[:, 0]  # [P, R, AP@0.5:0.95, AP@0.5]
+        mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
+        nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
+    else:
+        nt = torch.zeros(1)
+
+    # Print results
+    pf = &#39;%20s&#39; + &#39;%10.3g&#39; * 6  # print format
+    print(pf % (&#39;all&#39;, seen, nt.sum(), mp, mr, map, mf1))
+
+    # Print results per class
+    if verbose and nc &gt; 1 and len(stats):
+        for i, c in enumerate(ap_class):
+            print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
+
+    # Save JSON
+    if save_json and map and len(jdict):
+        imgIds = [int(Path(x).stem.split(&#39;_&#39;)[-1]) for x in dataloader.dataset.img_files]
+        with open(&#39;results.json&#39;, &#39;w&#39;) as file:
+            json.dump(jdict, file)
+
+        try:
+            from pycocotools.coco import COCO
+            from pycocotools.cocoeval import COCOeval
+        except:
+            print(&#39;WARNING: missing pycocotools package, can not compute official COCO mAP. See requirements.txt.&#39;)
+
+        # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
+        cocoGt = COCO(glob.glob(&#39;../coco/annotations/instances_val*.json&#39;)[0])  # initialize COCO ground truth api
+        cocoDt = cocoGt.loadRes(&#39;results.json&#39;)  # initialize COCO pred api
+
+        cocoEval = COCOeval(cocoGt, cocoDt, &#39;bbox&#39;)
+        cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
+        cocoEval.evaluate()
+        cocoEval.accumulate()
+        cocoEval.summarize()
+        mf1, map = cocoEval.stats[:2]  # update to pycocotools results (mAP@0.5:0.95, mAP@0.5)
+
+    # Return results
+    maps = np.zeros(nc) + map
+    for i, c in enumerate(ap_class):
+        maps[c] = ap[i]
+    return (mp, mr, map, mf1, *(loss / len(dataloader)).tolist()), maps</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="7_yolov3.lib.validate.validate"><code class="name flex">
+<span>def <span class="ident">validate</span></span>(<span>cfg, img_dir, label_dir, classes, weights=None, batch_size=16, img_size=416, conf_thres=0.001, iou_thres=0.5, save_json=False, single_cls=False, model=None, dataloader=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate(cfg,
+         img_dir,
+         label_dir,
+         classes,
+         weights=None,
+         batch_size=16,
+         img_size=416,
+         conf_thres=0.001,
+         iou_thres=0.5,  # for nms
+         save_json=False,
+         single_cls=False,
+         model=None,
+         dataloader=None):
+    # Initialize/load model and set device
+    if model is None:
+        device = torch_utils.select_device(opt.device, batch_size=batch_size)
+        verbose = opt.task == &#39;test&#39;
+
+        # Remove previous
+        for f in glob.glob(&#39;test_batch*.png&#39;):
+            os.remove(f)
+
+        # Initialize model
+        model = Darknet(cfg, img_size).to(device)
+
+        # Load weights
+        attempt_download(weights)
+        if weights.endswith(&#39;.pt&#39;):  # pytorch format
+            model.load_state_dict(torch.load(weights, map_location=device)[&#39;model&#39;])
+        else:  # darknet format
+            load_darknet_weights(model, weights)
+
+        if torch.cuda.device_count() &gt; 1:
+            model = nn.DataParallel(model)
+    else:  # called by train.py
+        device = next(model.parameters()).device  # get model device
+        verbose = False
+
+    # Configure run
+    
+    nc = 1 if single_cls else int(len(classes))  # number of classes
+    val_img_dir = img_dir;
+    val_label_dir = label_dir;
+    names = classes  # class names
+    iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
+    iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
+    niou = iouv.numel()
+
+    # Dataloader
+    if dataloader is None:
+        dataset = LoadImagesAndLabels(val_img_dir, val_label_dir, img_size, batch_size, rect=False)
+        batch_size = min(batch_size, len(dataset))
+        dataloader = DataLoader(dataset,
+                                batch_size=batch_size,
+                                num_workers=min([os.cpu_count(), batch_size if batch_size &gt; 1 else 0, 8]),
+                                pin_memory=True,
+                                collate_fn=dataset.collate_fn)
+
+    seen = 0
+    model.eval()
+    coco91class = coco80_to_coco91_class()
+    s = (&#39;%20s&#39; + &#39;%10s&#39; * 6) % (&#39;Class&#39;, &#39;Images&#39;, &#39;Targets&#39;, &#39;P&#39;, &#39;R&#39;, &#39;mAP@0.5&#39;, &#39;F1&#39;)
+    p, r, f1, mp, mr, map, mf1 = 0., 0., 0., 0., 0., 0., 0.
+    loss = torch.zeros(3)
+    jdict, stats, ap, ap_class = [], [], [], []
+    for batch_i, (imgs, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
+        imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
+        targets = targets.to(device)
+        _, _, height, width = imgs.shape  # batch size, channels, height, width
+
+        # Plot images with bounding boxes
+        if batch_i == 0 and not os.path.exists(&#39;test_batch0.png&#39;):
+            plot_images(imgs=imgs, targets=targets, paths=paths, fname=&#39;test_batch0.png&#39;)
+
+        # Disable gradients
+        with torch.no_grad():
+            # Run model
+            inf_out, train_out = model(imgs)  # inference and training outputs
+
+            # Compute loss
+            if hasattr(model, &#39;hyp&#39;):  # if model has loss hyperparameters
+                loss += compute_loss(train_out, targets, model)[1][:3].cpu()  # GIoU, obj, cls
+
+            # Run NMS
+            output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
+
+        # Statistics per image
+        for si, pred in enumerate(output):
+            labels = targets[targets[:, 0] == si, 1:]
+            nl = len(labels)
+            tcls = labels[:, 0].tolist() if nl else []  # target class
+            seen += 1
+
+            if pred is None:
+                if nl:
+                    stats.append((torch.zeros(0, niou, dtype=torch.bool), torch.Tensor(), torch.Tensor(), tcls))
+                continue
+
+            # Append to text file
+            # with open(&#39;test.txt&#39;, &#39;a&#39;) as file:
+            #    [file.write(&#39;%11.5g&#39; * 7 % tuple(x) + &#39;\n&#39;) for x in pred]
+
+            # Clip boxes to image bounds
+            clip_coords(pred, (height, width))
+
+            # Append to pycocotools JSON dictionary
+            if save_json:
+                # [{&#34;image_id&#34;: 42, &#34;category_id&#34;: 18, &#34;bbox&#34;: [258.15, 41.29, 348.26, 243.78], &#34;score&#34;: 0.236}, ...
+                image_id = int(Path(paths[si]).stem.split(&#39;_&#39;)[-1])
+                box = pred[:, :4].clone()  # xyxy
+                scale_coords(imgs[si].shape[1:], box, shapes[si][0], shapes[si][1])  # to original shape
+                box = xyxy2xywh(box)  # xywh
+                box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
+                for di, d in enumerate(pred):
+                    jdict.append({&#39;image_id&#39;: image_id,
+                                  &#39;category_id&#39;: coco91class[int(d[5])],
+                                  &#39;bbox&#39;: [floatn(x, 3) for x in box[di]],
+                                  &#39;score&#39;: floatn(d[4], 5)})
+
+            # Assign all predictions as incorrect
+            correct = torch.zeros(len(pred), niou, dtype=torch.bool)
+            if nl:
+                detected = []  # target indices
+                tcls_tensor = labels[:, 0]
+
+                # target boxes
+                tbox = xywh2xyxy(labels[:, 1:5]) * torch.Tensor([width, height, width, height]).to(device)
+
+                # Per target class
+                for cls in torch.unique(tcls_tensor):
+                    ti = (cls == tcls_tensor).nonzero().view(-1)  # prediction indices
+                    pi = (cls == pred[:, 5]).nonzero().view(-1)  # target indices
+
+                    # Search for detections
+                    if len(pi):
+                        # Prediction to target ious
+                        ious, i = box_iou(pred[pi, :4], tbox[ti]).max(1)  # best ious, indices
+
+                        # Append detections
+                        for j in (ious &gt; iouv[0]).nonzero():
+                            d = ti[i[j]]  # detected target
+                            if d not in detected:
+                                detected.append(d)
+                                correct[pi[j]] = (ious[j] &gt; iouv).cpu()  # iou_thres is 1xn
+                                if len(detected) == nl:  # all targets already located in image
+                                    break
+
+            # Append statistics (correct, conf, pcls, tcls)
+            stats.append((correct, pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
+
+    # Compute statistics
+    stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
+    if len(stats):
+        p, r, ap, f1, ap_class = ap_per_class(*stats)
+        if niou &gt; 1:
+            p, r, ap, f1 = p[:, 0], r[:, 0], ap.mean(1), ap[:, 0]  # [P, R, AP@0.5:0.95, AP@0.5]
+        mp, mr, map, mf1 = p.mean(), r.mean(), ap.mean(), f1.mean()
+        nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
+    else:
+        nt = torch.zeros(1)
+
+    # Print results
+    pf = &#39;%20s&#39; + &#39;%10.3g&#39; * 6  # print format
+    print(pf % (&#39;all&#39;, seen, nt.sum(), mp, mr, map, mf1))
+
+    # Print results per class
+    if verbose and nc &gt; 1 and len(stats):
+        for i, c in enumerate(ap_class):
+            print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
+
+    # Save JSON
+    if save_json and map and len(jdict):
+        imgIds = [int(Path(x).stem.split(&#39;_&#39;)[-1]) for x in dataloader.dataset.img_files]
+        with open(&#39;results.json&#39;, &#39;w&#39;) as file:
+            json.dump(jdict, file)
+
+        try:
+            from pycocotools.coco import COCO
+            from pycocotools.cocoeval import COCOeval
+        except:
+            print(&#39;WARNING: missing pycocotools package, can not compute official COCO mAP. See requirements.txt.&#39;)
+
+        # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
+        cocoGt = COCO(glob.glob(&#39;../coco/annotations/instances_val*.json&#39;)[0])  # initialize COCO ground truth api
+        cocoDt = cocoGt.loadRes(&#39;results.json&#39;)  # initialize COCO pred api
+
+        cocoEval = COCOeval(cocoGt, cocoDt, &#39;bbox&#39;)
+        cocoEval.params.imgIds = imgIds  # [:32]  # only evaluate these images
+        cocoEval.evaluate()
+        cocoEval.accumulate()
+        cocoEval.summarize()
+        mf1, map = cocoEval.stats[:2]  # update to pycocotools results (mAP@0.5:0.95, mAP@0.5)
+
+    # Return results
+    maps = np.zeros(nc) + map
+    for i, c in enumerate(ap_class):
+        maps[c] = ap[i]
+    return (mp, mr, map, mf1, *(loss / len(dataloader)).tolist()), maps</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="7_yolov3.lib" href="index.html">7_yolov3.lib</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="7_yolov3.lib.validate.validate" href="#7_yolov3.lib.validate.validate">validate</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
